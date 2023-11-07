@@ -1,0 +1,22 @@
+[
+    "CH4",
+    "CH4_dataMask",
+    "CO",
+    "CO_dataMask",
+    "HCHO",
+    "HCHO_dataMask",
+    "NO2",
+    "NO2_dataMask",
+    "O3",
+    "O3_dataMask",
+    "SO2",
+    "SO2_dataMask",
+    "CLOUD_TOP_PRESSURE",
+    "CLOUD_TOP_PRESSURE_dataMask",
+    "CLOUD_BASE_PRESSURE",
+    "CLOUD_BASE_PRESSURE_dataMask",
+    "AER_AI_340_380",
+    "AER_AI_340_380_dataMask",
+    "AER_AI_354_388",
+    "AER_AI_354_388_dataMask"
+]

@@ -1,0 +1,22 @@
+{
+    "u100": "m s**-1",
+    "v100": "m s**-1",
+    "u10": "m s**-1",
+    "v10": "m s**-1",
+    "d2m": "K",
+    "t2m": "K",
+    "cbh": "m",
+    "e": "m of water equivalent",
+    "hcc": "(0 - 1)",
+    "msl": "Pa",
+    "mcc": "(0 - 1)",
+    "skt": "K",
+    "asn": "(0 - 1)",
+    "sd": "m of water equivalent",
+    "es": "m of water equivalent",
+    "sf": "m of water equivalent",
+    "ssr": "J m**-2",
+    "str": "J m**-2",
+    "sp": "Pa",
+    "tp": "m"
+}

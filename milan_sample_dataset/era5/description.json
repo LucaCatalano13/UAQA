@@ -1,0 +1,22 @@
+{
+    "u100": "100 metre U wind component",
+    "v100": "100 metre V wind component",
+    "u10": "10 metre U wind component",
+    "v10": "10 metre V wind component",
+    "d2m": "2 metre dewpoint temperature",
+    "t2m": "2 metre temperature",
+    "cbh": "Cloud base height",
+    "e": "Evaporation",
+    "hcc": "High cloud cover",
+    "msl": "Mean sea level pressure",
+    "mcc": "Medium cloud cover",
+    "skt": "Skin temperature",
+    "asn": "Snow albedo",
+    "sd": "Snow depth",
+    "es": "Snow evaporation",
+    "sf": "Snowfall",
+    "ssr": "Surface net short-wave (solar) radiation",
+    "str": "Surface net long-wave (thermal) radiation",
+    "sp": "Surface pressure",
+    "tp": "Total precipitation"
+}

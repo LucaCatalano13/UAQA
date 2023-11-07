@@ -1,0 +1,12 @@
+{
+    "CH4":"ppb",
+    "CO":"mol/m2",
+    "HCHO":"mol/m2",
+    "NO2":"mol/m2",
+    "O3":"mol/m2",
+    "SO2":"mol/m2",
+    "CLOUD_TOP_PRESSURE":"Pa",
+    "CLOUD_BASE_PRESSURE":"Pa",
+    "AER_AI_340_380": "Index",
+    "AER_AI_354_388": "Index"
+}
