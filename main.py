@@ -7,7 +7,7 @@ from .datasets.Sentinel5 import Sentinel5
 from .datasets.LandCover import LandCover
 from .datasets.CollectionDataset import CollectionDataset
 from .utils import process_images
-import parser
+
 
 if __name__ == "__main__":
     args = parser.parse_arguments()
