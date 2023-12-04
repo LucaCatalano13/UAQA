@@ -1,7 +1,7 @@
 import numpy as np
 
-from ..utils import FINAL_H, FINAL_W, resize_array
-from .AdspDataset import ADSP_Dataset
+from utils import FINAL_H, FINAL_W, resize_array
+from AdspDataset import ADSP_Dataset
 
 S3_BANDS = ['F1', 'F2', 'S7', 'S8', 'S9']
 

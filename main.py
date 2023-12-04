@@ -1,12 +1,12 @@
 import torch
 
-from .datasets.Era5 import Era5
-from .datasets.Dem import Dem
-from .datasets.Sentinel3 import Sentinel3
-from .datasets.Sentinel5 import Sentinel5
-from .datasets.LandCover import LandCover
-from .datasets.CollectionDataset import CollectionDataset
-from .utils import process_images
+from datasets.Era5 import Era5
+from datasets.Dem import Dem
+from datasets.Sentinel3 import Sentinel3
+from datasets.Sentinel5 import Sentinel5
+from datasets.LandCover import LandCover
+from datasets.CollectionDataset import CollectionDataset
+from utils import process_images
 import parser
 
 if __name__ == "__main__":

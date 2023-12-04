@@ -4,12 +4,12 @@ from pyproj import Transformer, CRS
 from typing import List, Optional
 from tqdm import tqdm
 
-from .datasets.Dem import DEM_BANDS
-from .datasets.LandCover import LC_BANDS
-from .datasets.Sentinel3 import S3_BANDS
-from .datasets.Sentinel5 import S5_BANDS
-from .datasets.Era5 import ERA5_BANDS
-from .datasets.CollectionDataset import BANDS, REMOVE_BANDS, ADD_BY, DIVIDE_BY
+from datasets.Dem import DEM_BANDS
+from datasets.LandCover import LC_BANDS
+from datasets.Sentinel3 import S3_BANDS
+from datasets.Sentinel5 import S5_BANDS
+from datasets.Era5 import ERA5_BANDS
+from datasets.CollectionDataset import BANDS, REMOVE_BANDS, ADD_BY, DIVIDE_BY
 
 
 FINAL_H = 18
