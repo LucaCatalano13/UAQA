@@ -3,8 +3,8 @@ import json
 import rasterio
 from rasterio.plot import show
 
-from utils import FINAL_H, FINAL_W, resize_array, convert_matrix
-from AdspDataset import ADSP_Dataset
+from datasets.dataset_utils import FINAL_H, FINAL_W, resize_array, convert_matrix
+from datasets.ADSP_Dataset import ADSP_Dataset
 
 LC_BANDS = ['Continuous Urban Fabric (S.L. &amp;gt; 80%)',
  'Discontinuous Dense Urban Fabric (S.L. : 50% - 80%)',

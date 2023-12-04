@@ -1,8 +1,8 @@
 import numpy as np
 from rasterio.plot import show
 import cv2
-from utils import FINAL_H, FINAL_W
-from AdspDataset import ADSP_Dataset
+from .dataset_utils import FINAL_H, FINAL_W
+from .ADSP_Dataset import ADSP_Dataset
 
 ERA5_BANDS = ['u100',
  'v100',

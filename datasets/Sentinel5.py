@@ -1,8 +1,8 @@
 import numpy as np
 import rasterio
 
-from utils import FINAL_H, FINAL_W, resize_array
-from AdspDataset import ADSP_Dataset
+from datasets.dataset_utils import FINAL_H, FINAL_W, resize_array
+from datasets.ADSP_Dataset import ADSP_Dataset
 
 S5_BANDS = ['CH4',
  'CO',
