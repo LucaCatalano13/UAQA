@@ -1,2 +1,8 @@
 
 *.tiff
+.idea
+.spyproject
+__pycache__
+.ipynb_checkpoints
+LOGS
+.DS_Store
