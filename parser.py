@@ -38,8 +38,6 @@ def parse_arguments():
     parser.add_argument("--dem_legend_path", type=str, default="milan_crop_legend/dem",
                         help="path to Dem dataset")
 
-    parser.add_argument("--checkpoint_path", type=str, default="./LOGS/lightning_logs/version_0/checkpoints/*.ckpt",
-                        help="path for loading pytorch lightning checkpoints")
 
     # Visualization parameters
 
