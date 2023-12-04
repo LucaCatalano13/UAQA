@@ -1,7 +1,7 @@
 import numpy as np
 
-from ..utils import FINAL_H, FINAL_W, resize_array
-from .AdspDataset import ADSP_Dataset
+from utils import FINAL_H, FINAL_W, resize_array
+from AdspDataset import ADSP_Dataset
 
 DEM_BANDS = ['DEM']
 DEM_SHIFT_VALUES = [0.0]
