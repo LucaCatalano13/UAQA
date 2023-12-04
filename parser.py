@@ -10,7 +10,7 @@ def parse_arguments():
     parser.add_argument("--load_data_input", type=bool, default=True,
                         help="load checkpoint of input data")
     
-    parser.add_argument("--input_data_path", type=str, default="/data_file.pt",
+    parser.add_argument("--input_data_path", type=str, default="data_file.pt",
                         help="path for loading input data")
     
     # Visualizations parameters

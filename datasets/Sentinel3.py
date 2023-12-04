@@ -30,7 +30,7 @@ class Sentinel3(ADSP_Dataset):
           if str(s) in str(f):
             check = False
         if check:
-          string_date = str(f).split('/')[4].split('T')[0]
+          string_date = str(f).split('/')[2].split('T')[0]
           if string_date not in dictionary_date_signle_file:
             dictionary_date_signle_file[string_date] = str(f)
       self.files_temporal_aligned = sorted(list(dictionary_date_signle_file.values()))

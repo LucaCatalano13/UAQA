@@ -19,7 +19,7 @@ if __name__ == "__main__":
     collection_dataset = CollectionDataset(era = era, dem = dem, sentinel3 = sentinel3, sentinel5 = sentinel5, land_cover = land_cover)
     if args.load_data_input:
         data = torch.load(args.input_data_path)
-        print(data.shape)
+        print(len(data))
     else:
         data = process_images(collection_dataset, land_cover.get_bound())
         torch.save(data, args.input_data_path)
