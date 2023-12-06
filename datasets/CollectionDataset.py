@@ -1,5 +1,8 @@
 import numpy as np
 from functools import reduce
+from collections import OrderedDict
+from typing import OrderedDict as OrderedDictType
+from typing import List
 
 from .Dem import DEM_BANDS, DEM_SHIFT_VALUES, DEM_DIV_VALUES
 from .LandCover import LC_BANDS, LC_SHIFT_VALUES, LC_DIV_VALUES
@@ -34,6 +37,16 @@ DIVIDE_BY = (
 
 NORMED_BANDS = [x for x in BANDS]
 NUM_BANDS = len(NORMED_BANDS)
+
+BANDS_GROUPS_IDX: OrderedDictType[str, List[int]] = OrderedDict(
+    {
+        "S3": [NORMED_BANDS.index(b) for b in S3_BANDS],
+        "S5": [NORMED_BANDS.index(b) for b in S5_BANDS],
+        "ERA5": [NORMED_BANDS.index(b) for b in ERA5_BANDS],
+        "DEM": [NORMED_BANDS.index(b) for b in DEM_BANDS],
+        "LC": [NORMED_BANDS.index(b) for b in LC_BANDS]
+    }
+)
 
 class CollectionDataset():
     def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):

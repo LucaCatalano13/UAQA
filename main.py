@@ -8,6 +8,7 @@ from datasets.LandCover import LandCover
 from datasets.CollectionDataset import CollectionDataset
 from utils import process_images
 import parser
+from presto.presto import Encoder, Decoder, Presto
 
 if __name__ == "__main__":
     args = parser.parse_arguments()
@@ -23,3 +24,7 @@ if __name__ == "__main__":
     else:
         data = process_images(collection_dataset, land_cover.get_bound())
         torch.save(data, args.input_data_path)
+    encoder = Encoder()
+    decoder = Decoder(encoder.channel_embed)
+    presto = Presto(encoder, decoder)
+    print(presto)
