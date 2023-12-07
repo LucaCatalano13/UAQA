@@ -340,7 +340,6 @@ class Encoder(nn.Module):
 
     @staticmethod
     def cartesian(latlons: torch.Tensor) -> torch.Tensor:
-        print(latlons.shape)
         with torch.no_grad():
             # an embedding is calculated for all timesteps. This is then expanded
             # for each timestep in the sequence
@@ -349,7 +348,6 @@ class Encoder(nn.Module):
             x = torch.cos(lats) * torch.cos(lons)
             y = torch.cos(lats) * torch.sin(lons)
             z = torch.sin(lats)
-        print(torch.stack([x, y, z], dim=-1))
         return torch.stack([x, y, z], dim=-1)
 
     @staticmethod
@@ -525,13 +523,12 @@ class Decoder(nn.Module):
     def add_embeddings(self, x, day_of_week: Union[torch.Tensor, int], day_of_year: Union[torch.Tensor, int]):
         num_channel_groups = len(self.band_group_to_idx)
         # TODO: our assumption -1 since we remove latlon
-        num_timesteps = int((x.shape[1] - 1) / (num_channel_groups))
+        # TODO: (x.shape[1] - 1) no more necessary
+        num_timesteps = int((x.shape[1]-1) / (num_channel_groups))
+        print(num_timesteps)
         # months = month_to_tensor(month, x.shape[0], num_timesteps)
         # when we expand the encodings, each channel_group gets num_timesteps
         # encodings.
-        remove_mask = torch.full(size=(num_timesteps * num_channel_groups,), fill_value=False)
-        remove_mask[torch.arange(num_timesteps - 1)] = True
-
         day_of_week_embedding = repeat(
             self.day_of_week_embed(day_of_week), "b t d -> b (repeat t) d", repeat=num_channel_groups
         )
@@ -539,23 +536,18 @@ class Decoder(nn.Module):
             self.day_of_year_embed(day_of_year), "b t d -> b (repeat t) d", repeat=num_channel_groups
         )
 
-        day_of_week_embedding = day_of_week_embedding[:, ~remove_mask]
-        day_of_year_embedding = day_of_year_embedding[:, ~remove_mask]
-       
         positional_embedding = repeat(
             self.pos_embed[:, :num_timesteps, :],
             "b t d -> (b2 b) (t2 t) d",
             b2=x.shape[0],
             t2=num_channel_groups,
         )
-        positional_embedding = positional_embedding[:, ~remove_mask]
-
         channel_embeddings = torch.repeat_interleave(
             self.channel_embeddings.weight, repeats=num_timesteps, dim=0
         )
+        print(channel_embeddings.shape)
         channel_embeddings = repeat(channel_embeddings, "c d -> b c d", b=x.shape[0])
-        channel_embeddings = channel_embeddings[:, ~remove_mask]
-
+        print(day_of_year_embedding.shape, day_of_week_embedding.shape, channel_embeddings.shape, positional_embedding.shape)
         positional_embedding = torch.cat(
             (day_of_year_embedding, day_of_week_embedding, channel_embeddings, positional_embedding), dim=-1
         )
@@ -649,7 +641,7 @@ class Presto(Seq2Seq):
         day_of_year: Union[torch.Tensor, int] = 0,
         day_of_week: Union[torch.Tensor, int] = 0
     ) -> torch.Tensor:
-        x, kept_indices, removed_indices = self.encoder(
+        x = self.encoder(
             x=x,
             latlons=latlons,
             mask=mask,
@@ -658,7 +650,7 @@ class Presto(Seq2Seq):
             eval_task=False,
         )
 
-        return self.decoder(x, kept_indices, removed_indices, day_of_week, day_of_year)
+        return self.decoder(x, day_of_week, day_of_year)
 
     @classmethod
     def construct(

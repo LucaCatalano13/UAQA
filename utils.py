@@ -87,7 +87,7 @@ def get_city_grids(bounds, radius=0.0045):
         y = ymin+radius/2
         ix_y = 0
         while y < ymax:
-            l.append(torch.Tensor([x, y]))
+            l.append([x, y])
             y+=radius
             ix_y+=1
         x+=radius
@@ -98,9 +98,14 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
     '''
     From a single dataset of all datsets analyzed generate the input to Presto architecture
     '''
-    arrays, hard_masks, latlons, dates = [], [], [], []
     if amount_of_data is None:
         amount_of_data = len(collection_dataset)
+    
+    arrays = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
+    hard_masks = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
+    latlons = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, 2), dtype=np.float32)
+    dates = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
+
     for i in tqdm(range(amount_of_data)):
         era, lc, s3, s5, dem, date = collection_dataset[i]
         # TODO: EPSG:4326 --> EPSG:32632 --> Ma poi su Slack dite di ritornare a EPSG:4326
@@ -128,32 +133,23 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
                     dem=dem_with_time_dimension, dem_bands=DEM_BANDS,
                     lc=lc_with_time_dimension, lc_bands=LC_BANDS
                 )
-                arrays.append(x)
-                hard_masks.append(hard_mask)
-                dates.append(date)
+                arrays[i, row_idx, col_idx, :] = x
+                hard_masks[i, row_idx, col_idx, :] = hard_mask
+                dates[i, row_idx, col_idx, :] = date
 
-        latlons.append(get_city_grids(bounds).flatten())
+        latlons[i, :, :] = get_city_grids(bounds)
 
-    return (torch.stack(arrays, axis=0),
-            torch.stack(hard_masks, axis=0),
-            # torch.stack(dynamic_worlds, axis=0),
-            torch.stack(latlons, axis=0),
-            dates,
-            # image_names,
-        )
+    return (arrays, hard_masks, latlons, dates)
 
-def get_day_of_year_and_day_of_week(date_list):
-    day_of_year = []
-    day_of_week = []
+def get_day_of_year_and_day_of_week(date_str):
 
-    for date_str in date_list:
-        date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
 
-        # Day of Year
-        day_of_year.append(date.timetuple().tm_yday)
+    # Day of Year
+    day_of_year = date.timetuple().tm_yday
 
-        # Day of Week (Monday is 0 and Sunday is 6)
-        day_of_week.append(date.weekday())
+    # Day of Week (Monday is 0 and Sunday is 6)
+    day_of_week = date.weekday()
 
     # Convert lists to numpy arrays
     day_of_year_tensor = torch.tensor(day_of_year)
