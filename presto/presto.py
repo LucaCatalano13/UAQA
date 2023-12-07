@@ -340,6 +340,7 @@ class Encoder(nn.Module):
 
     @staticmethod
     def cartesian(latlons: torch.Tensor) -> torch.Tensor:
+        print(latlons.shape)
         with torch.no_grad():
             # an embedding is calculated for all timesteps. This is then expanded
             # for each timestep in the sequence
@@ -348,6 +349,7 @@ class Encoder(nn.Module):
             x = torch.cos(lats) * torch.cos(lons)
             y = torch.cos(lats) * torch.sin(lons)
             z = torch.sin(lats)
+        print(torch.stack([x, y, z], dim=-1))
         return torch.stack([x, y, z], dim=-1)
 
     @staticmethod
@@ -357,19 +359,9 @@ class Encoder(nn.Module):
         )  # summed tells me the number of masked elements per batch idx
         # assert summed.max() == summed.min(), f"{summed.max()}, {summed.min()}"
         batch_size = x.shape[0]
-        removed_elements_per_batch = int(summed.max() / mask.shape[2])
-        kept_elements_per_batch = x.shape[1] - removed_elements_per_batch
         embedding_dim = x.shape[-1]
-
-        # we want the mask to just be the indices of the masked tokens
-        indices = repeat(torch.arange(0, x.shape[1]).long().to(device), "d -> b d", b=x.shape[0])
-        x = x[~mask.bool()].view(batch_size, kept_elements_per_batch, embedding_dim)
-
-        mask = mask[:, :, 0]
-        kept_indices = indices[~mask.bool()].view(batch_size, kept_elements_per_batch)
-        removed_indices = indices[mask.bool()].view(batch_size, removed_elements_per_batch)
-
-        return x, kept_indices, removed_indices
+        x = (x * ~mask.bool()).view(batch_size, x.shape[-2], embedding_dim)
+        return x
 
     def forward(
         self,
@@ -430,7 +422,7 @@ class Encoder(nn.Module):
 
         x = torch.cat(all_tokens, dim=1)  # [batch, timesteps, embedding_dim]
         mask = torch.cat(all_masks, dim=1)  # [batch, timesteps, embedding_dim]
-        x, kept_indices, removed_indices = self.mask_tokens(x, mask)
+        x = self.mask_tokens(x, mask)
 
         # append latlon tokens
         latlon_tokens = self.latlon_embed(self.cartesian(latlons)).unsqueeze(1)
@@ -442,7 +434,7 @@ class Encoder(nn.Module):
 
         if eval_task:
             return self.norm(x.mean(dim=1))
-        return self.norm(x), kept_indices, removed_indices
+        return self.norm(x)
 
 class Decoder(nn.Module):
     def __init__(
@@ -530,24 +522,6 @@ class Decoder(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def add_masked_tokens(self, x, kept_indices, removed_indices):
-        mask_tokens = repeat(
-            self.mask_token, "d -> b t d", b=x.shape[0], t=removed_indices.shape[1]
-        )
-
-        x = torch.cat([x, mask_tokens], dim=1)
-
-        # sort according to their indices. Shape is [batch, index]
-        combined_indices = torch.cat([kept_indices, removed_indices], dim=1) + 1
-        # 0 for latlon index
-        combined_indices = torch.sort(
-            torch.cat([torch.zeros_like(combined_indices[:, 0:1]), combined_indices], dim=1)
-        )[1]
-        # and then tile for each dimension
-        combined_indices = repeat(combined_indices, "b t -> b t d", d=x.shape[-1])
-        x = torch.gather(x, 1, combined_indices)
-        return x
-
     def add_embeddings(self, x, day_of_week: Union[torch.Tensor, int], day_of_year: Union[torch.Tensor, int]):
         num_channel_groups = len(self.band_group_to_idx)
         # TODO: our assumption -1 since we remove latlon
@@ -617,10 +591,9 @@ class Decoder(nn.Module):
         # is ordered
         return torch.cat(eo_output, dim=-1), cast(torch.Tensor, dw_output)
 
-    def forward(self, x, kept_indices, removed_indices, day_of_week, day_of_year):
+    def forward(self, x, day_of_week, day_of_year):
         # FC
         x = self.decoder_embed(x)
-        x = self.add_masked_tokens(x, kept_indices, removed_indices)
         x = self.add_embeddings(x, day_of_week, day_of_year)
 
         # apply Transformer blocks

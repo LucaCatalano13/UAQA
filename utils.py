@@ -3,6 +3,8 @@ import torch
 from pyproj import Transformer, CRS
 from typing import List, Optional
 from tqdm import tqdm
+import datetime
+
 from datasets.Dem import DEM_BANDS
 from datasets.LandCover import LC_BANDS
 from datasets.Sentinel3 import S3_BANDS
@@ -42,7 +44,7 @@ def construct_single_presto_input(
     # pick the only value = 1
     num_timesteps = num_timesteps_list[0]
     # initialize mask of shape (1, all bands available in our datasets)
-    mask = torch.ones(num_timesteps, len(BANDS))
+    hard_mask = torch.ones(num_timesteps, len(BANDS))
     #  initialize x of shape (1, all bands available in our datasets)
     x = torch.zeros(num_timesteps, len(BANDS))
     # for each input, if it exists, add it to x and set the corresponding mask to 0
@@ -67,11 +69,11 @@ def construct_single_presto_input(
         input_to_output_mapping = [BANDS.index(val) for val in kept_input_band_names]
         # add the data to x and set the corresponding mask to 0
         x[:, input_to_output_mapping] = data[:, kept_input_band_idxs]
-        mask[:, input_to_output_mapping] = 0
+        hard_mask[:, input_to_output_mapping] = 0
 
     if normalize:
         x = normalize(x)
-    return x, mask
+    return x, hard_mask
 
 def get_city_grids(bounds, radius=0.0045):
     # TODO: not used, we are already in 4326 and we have to go back to 4326
@@ -90,16 +92,17 @@ def get_city_grids(bounds, radius=0.0045):
             ix_y+=1
         x+=radius
         ix_x+=1
-    return l
+    return np.array(l)
 
-def process_images(collection_dataset, bounds):
+def process_images(collection_dataset, bounds, amount_of_data = None):
     '''
     From a single dataset of all datsets analyzed generate the input to Presto architecture
     '''
-    arrays, masks, latlons = [], [], []
-    for i in tqdm(range(len(collection_dataset))):
-        era, lc, s3, s5, dem = collection_dataset[i]
-
+    arrays, hard_masks, latlons, dates = [], [], [], []
+    if amount_of_data is None:
+        amount_of_data = len(collection_dataset)
+    for i in tqdm(range(amount_of_data)):
+        era, lc, s3, s5, dem, date = collection_dataset[i]
         # TODO: EPSG:4326 --> EPSG:32632 --> Ma poi su Slack dite di ritornare a EPSG:4326
         # convert box
         # function in SLACK to transform
@@ -118,7 +121,7 @@ def process_images(collection_dataset, bounds):
                 dem_with_time_dimension = dem_for_pixel.unsqueeze(0)
                 lc_with_time_dimension = lc_for_pixel.unsqueeze(0)
 
-                x, mask = construct_single_presto_input(
+                x, hard_mask = construct_single_presto_input(
                     s3=s3_with_time_dimension, s3_bands=S3_BANDS,
                     era5=era_with_time_dimension, era5_bands=ERA5_BANDS,
                     s5=s5_with_time_dimension, s5_bands=S5_BANDS,
@@ -126,13 +129,34 @@ def process_images(collection_dataset, bounds):
                     lc=lc_with_time_dimension, lc_bands=LC_BANDS
                 )
                 arrays.append(x)
-                masks.append(mask)
-    latlons = get_city_grids(bounds)
+                hard_masks.append(hard_mask)
+                dates.append(date)
+
+        latlons.append(get_city_grids(bounds).flatten())
 
     return (torch.stack(arrays, axis=0),
-            torch.stack(masks, axis=0),
+            torch.stack(hard_masks, axis=0),
             # torch.stack(dynamic_worlds, axis=0),
             torch.stack(latlons, axis=0),
-            # torch.tensor(labels),
+            dates,
             # image_names,
         )
+
+def get_day_of_year_and_day_of_week(date_list):
+    day_of_year = []
+    day_of_week = []
+
+    for date_str in date_list:
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+
+        # Day of Year
+        day_of_year.append(date.timetuple().tm_yday)
+
+        # Day of Week (Monday is 0 and Sunday is 6)
+        day_of_week.append(date.weekday())
+
+    # Convert lists to numpy arrays
+    day_of_year_tensor = torch.tensor(day_of_year)
+    day_of_week_tensor = torch.tensor(day_of_week)
+
+    return day_of_year_tensor, day_of_week_tensor
