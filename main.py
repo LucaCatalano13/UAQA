@@ -35,14 +35,9 @@ if __name__ == "__main__":
         )
 
     encoder = Encoder()
-    print(encoder)
     decoder = Decoder(encoder.channel_embed)
-    print(encoder.channel_embed.weight.shape, type(encoder.channel_embed))
     presto = Presto(encoder, decoder)
+
     for (x, hard_mask, latlons, day_of_year, day_of_week) in tqdm(train_dataloader):
-        encoded_x = encoder(x=x, mask = hard_mask, latlons=latlons, 
-                       day_of_year = day_of_year, day_of_week = day_of_week)
-        print("##", type(encoded_x), encoded_x.shape)
         presto(x=x, mask = hard_mask, latlons=latlons, 
                         day_of_year = day_of_year, day_of_week = day_of_week)
-        # presto(x=data[0], mask = data[1], latlons=data[2], day_of_year = day_of_year.unsqueeze(1), day_of_week = day_of_week.unsqueeze(1))
