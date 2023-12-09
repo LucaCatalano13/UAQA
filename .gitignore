@@ -1,5 +1,5 @@
-
 *.tiff
+try_things.ipynb
 .idea
 .spyproject
 __pycache__
