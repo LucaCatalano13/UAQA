@@ -33,7 +33,7 @@ def construct_single_presto_input(
     s5_bands: Optional[List[str]] = None,
     normalize: bool = False,
 ):
-    
+
     '''
     Constructin single presto input
     '''
@@ -78,7 +78,7 @@ def construct_single_presto_input(
 def get_city_grids(bounds, radius=0.0045):
     # TODO: not used, we are already in 4326 and we have to go back to 4326
     #converted is used only in gridbox, that we haven't
-    l = []
+    l = np.ndarray((FINAL_H, FINAL_W, 2))
     converted = Transformer.from_crs(CRS.from_epsg(4326), CRS.from_epsg(32632), always_xy=True).transform
     xmin, ymax, xmax, ymin = bounds
     x = xmin+radius/2
@@ -87,7 +87,7 @@ def get_city_grids(bounds, radius=0.0045):
         y = ymin+radius/2
         ix_y = 0
         while y < ymax:
-            l.append([x, y])
+            l[ix_y, ix_x, :] = np.array([x, y])
             y+=radius
             ix_y+=1
         x+=radius
@@ -100,11 +100,11 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
     '''
     if amount_of_data is None:
         amount_of_data = len(collection_dataset)
-    
+
     arrays = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
     hard_masks = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
     latlons = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, 2), dtype=np.float32)
-    dates = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, len(BANDS)), dtype=np.float32)
+    dates = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W), dtype=object)
 
     for i in tqdm(range(amount_of_data)):
         era, lc, s3, s5, dem, date = collection_dataset[i]
@@ -135,21 +135,24 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
                 )
                 arrays[i, row_idx, col_idx, :] = x
                 hard_masks[i, row_idx, col_idx, :] = hard_mask
-                dates[i, row_idx, col_idx, :] = date
+                dates[i, row_idx, col_idx] = date
 
         latlons[i, :, :] = get_city_grids(bounds)
 
-    return (arrays, hard_masks, latlons, dates)
+    return (torch.Tensor(arrays), torch.Tensor(hard_masks), torch.Tensor(latlons), torch.Tensor(dates))
 
-def get_day_of_year_and_day_of_week(date_str):
+def get_day_of_year_and_day_of_week(date_list):
+    day_of_year = []
+    day_of_week = []
 
-    date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    for date_str in date_list:
+        date = datetime.datetime.strptime(str(date_str), "%Y-%m-%d")
 
-    # Day of Year
-    day_of_year = date.timetuple().tm_yday
+        # Day of Year
+        day_of_year.append(date.timetuple().tm_yday)
 
-    # Day of Week (Monday is 0 and Sunday is 6)
-    day_of_week = date.weekday()
+        # Day of Week (Monday is 0 and Sunday is 6)
+        day_of_week.append(date.weekday())
 
     # Convert lists to numpy arrays
     day_of_year_tensor = torch.tensor(day_of_year)
