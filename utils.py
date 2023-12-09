@@ -70,6 +70,9 @@ def construct_single_presto_input(
         # add the data to x and set the corresponding mask to 0
         x[:, input_to_output_mapping] = data[:, kept_input_band_idxs]
         hard_mask[:, input_to_output_mapping] = 0
+    
+    # set the mask to 1 if the data is nan
+    hard_mask[x.isnan()] = 1
 
     if normalize:
         x = normalize(x)

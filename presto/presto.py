@@ -344,7 +344,7 @@ class Encoder(nn.Module):
             # an embedding is calculated for all timesteps. This is then expanded
             # for each timestep in the sequence
             latlon_radians = latlons * math.pi / 180
-            lats, lons = latlon_radians[:, 0], latlon_radians[:, 1]
+            lats, lons = latlon_radians[:, :, 0], latlon_radians[:, :, 1]
             x = torch.cos(lats) * torch.cos(lons)
             y = torch.cos(lats) * torch.sin(lons)
             z = torch.sin(lats)
@@ -352,13 +352,11 @@ class Encoder(nn.Module):
 
     @staticmethod
     def mask_tokens(x, mask):
-        summed = mask.sum(
-            dim=(1, 2)
-        )  # summed tells me the number of masked elements per batch idx
-        # assert summed.max() == summed.min(), f"{summed.max()}, {summed.min()}"
         batch_size = x.shape[0]
         embedding_dim = x.shape[-1]
-        x = (x * ~mask.bool()).view(batch_size, x.shape[-2], embedding_dim)
+        # TODO: mask value = 0?
+        x[mask.bool()] = 0
+        x = x.view(batch_size, x.shape[-2], embedding_dim)
         return x
 
     def forward(
@@ -417,20 +415,24 @@ class Encoder(nn.Module):
                 d=tokens.shape[-1],
             )
             all_masks.append(group_mask)
-        x = torch.cat(all_tokens, dim=1)  # [batch, timesteps, embedding_dim]
-        mask = torch.cat(all_masks, dim=1)  # [batch, timesteps, embedding_dim]
+        
+        # TODO: separate timesteps and channels? --> probably origin of 1 in dimensions
+        x = torch.cat(all_tokens, dim=1)
+        mask = torch.cat(all_masks, dim=1)
         x = self.mask_tokens(x, mask)
-        # append latlon tokens
-        latlon_tokens = self.latlon_embed(self.cartesian(latlons))
+        # latlons (BS, timesteps, 2)
+        # latlons_cartesian (BS, timesteps, 3)
+        # latlons_token (BS, 1, 128)
+        latlon_tokens = self.latlon_embed(self.cartesian(latlons)[:, 0, :]).unsqueeze(1)
+        # append lat_lon token to the embedding
+        # x (BS, len(band_idx)*timesteps, 128) --> (BS, (len(band_idx)*timesteps)+1, 128)
+        # lend(band_ix) == n_channel_groups (in our case == n_datasets becouse we do not create subgroup of datasets)
         x = torch.cat((latlon_tokens, x), dim=1)
-
         # apply Transformer blocks
         for blk in self.blocks:
             x = blk(x)
-
         if eval_task:
             return self.norm(x.mean(dim=1))
-        print("@@@@", x.shape, self.norm(x).shape)
         return self.norm(x)
 
 class Decoder(nn.Module):
@@ -521,73 +523,66 @@ class Decoder(nn.Module):
 
     def add_embeddings(self, x, day_of_week: Union[torch.Tensor, int], day_of_year: Union[torch.Tensor, int]):
         num_channel_groups = len(self.band_group_to_idx)
-        # TODO: our assumption -2 since we remove latlon
-        num_timesteps = int((x.shape[1] - 2) / (num_channel_groups))
-        # months = month_to_tensor(month, x.shape[0], num_timesteps)
-        # when we expand the encodings, each channel_group gets num_timesteps
-        # encodings.
-        ####################-------–####################
-        
+        # -1 since we remove latlon token (one per batch element (cut of a pixel timeseries))
+        num_timesteps = int((x.shape[1] - 1) / (num_channel_groups))
+        # day_of_week (BS, timesteps) --> (BS, timesteps*len(band_idx), 128/4)
         day_of_week_embedding = repeat(
             self.day_of_week_embed(day_of_week), "b t d -> b (repeat t) d", repeat=num_channel_groups
         )
-        print("day_of_week_embedding", day_of_week_embedding.shape)
+        # day_of_year (BS, timesteps) --> (BS, timesteps*len(band_idx), 128/4)
         day_of_year_embedding = repeat(
             self.day_of_year_embed(day_of_year), "b t d -> b (repeat t) d", repeat=num_channel_groups
         )
-
+        # positional_embedding (BS, timesteps*len(band_idx), 128/4)
         positional_embedding = repeat(
             self.pos_embed[:, :num_timesteps, :],
             "b t d -> (b2 b) (t2 t) d",
             b2=x.shape[0],
             t2=num_channel_groups,
         )
+        # TODO: self.channel_embeddings.weight is the matrix of the embeddings of the channel groups in the encoder. Why?
+        # channel_embeddings (timesteps*len(band_idx), 128/4)
         channel_embeddings = torch.repeat_interleave(
             self.channel_embeddings.weight, repeats=num_timesteps, dim=0
         )
-        print(num_timesteps, channel_embeddings.shape)
+        # channel_embeddings (BS, timesteps*len(band_idx), 128/4)
         channel_embeddings = repeat(channel_embeddings, "c d -> b c d", b=x.shape[0])
-        print(day_of_year_embedding.shape, day_of_week_embedding.shape, channel_embeddings.shape, positional_embedding.shape)
+        # positional_embedding (BS, timesteps*len(band_idx), 128) 128 = sum of the fraction of the embedding size above
         positional_embedding = torch.cat(
             (day_of_year_embedding, day_of_week_embedding, channel_embeddings, positional_embedding), dim=-1
         )
-
-        # TODO: understand why remove latlon and then put it back to zeros
         # add the zero embedding for the latlon token
+        # positional_embedding (BS, timesteps*len(band_idx)+1, 128)
         positional_embedding = torch.cat(
             [torch.zeros_like(positional_embedding[:, 0:1, :]), positional_embedding], dim=1
         )
-
-        print(x.shape, positional_embedding.shape)
         x += positional_embedding
         return x
 
     def reconstruct_inputs(self, x) -> Tuple[torch.Tensor, torch.Tensor]:
+        # remove the latlon token
+        x = x[:, 1:, :]
         # split into channel groups
         num_channel_groups = len(self.band_group_to_idx)
-        num_timesteps = int((x.shape[1] - 1) / num_channel_groups)
+        num_timesteps = int((x.shape[1]) / num_channel_groups)
 
-        mask = torch.full((x.shape[1],), True, device=x.device)
-        print(x.shape)
-        x = x[:, mask]
-        print(x.shape)
+        #TODO: shape dimension = 4?
         x = x.view(x.shape[0], num_channel_groups, num_timesteps, x.shape[-1])
 
-        eo_output, dw_output = [], None
+        eo_output = []
         for group_name, idx in self.band_group_to_idx.items():
             group_tokens = x[:, idx]
             eo_output.append(self.eo_decoder_pred[group_name](group_tokens))
 
         # we can just do this concatenation because the BANDS_GROUP_IDX
         # is ordered
-        return torch.cat(eo_output, dim=-1), cast(torch.Tensor, dw_output)
+        return torch.cat(eo_output, dim=-1)
 
     def forward(self, x, day_of_week, day_of_year):
         # FC
         # (BS, 27, 128) --> 27 perchè 25 (ntimesteps*n_bands_idx) + 2 (latlon)
         x = self.decoder_embed(x)
         x = self.add_embeddings(x, day_of_week, day_of_year)
-
         # apply Transformer blocks
         for blk in self.decoder_blocks:
             x = blk(x)
@@ -641,8 +636,6 @@ class Presto(Seq2Seq):
         day_of_year: Union[torch.Tensor, int] = 0,
         day_of_week: Union[torch.Tensor, int] = 0
     ) -> torch.Tensor:
-        print("Before encoder")
-        print(x.shape)
         x = self.encoder(
             x=x,
             latlons=latlons,
@@ -651,8 +644,6 @@ class Presto(Seq2Seq):
             day_of_week=day_of_week,
             eval_task=False,
         )
-        print("After encoder")
-        print(x.shape)
         return self.decoder(x, day_of_week, day_of_year)
 
     @classmethod
