@@ -10,13 +10,11 @@ import torch
 
 logger = logging.getLogger("__main__")
 
-
 def update_data_dir(new_data_dir: str):
     global data_dir
     data_dir = Path(new_data_dir) / "data"
     data_dir.mkdir(exist_ok=True, parents=True)
     logger.info("Setting other data dir to be used: %s" % data_dir)
-
 
 data_dir = Path(__file__).parent.parent / "data"
 data_dir.mkdir(exist_ok=True, parents=True)
@@ -43,7 +41,6 @@ def seed_everything(seed: int = DEFAULT_SEED):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
 
-
 def initialize_logging(output_dir: Union[str, Path], to_file=True, logger_name="__main__"):
     logger = logging.getLogger(logger_name)
     formatter = logging.Formatter(
@@ -65,7 +62,6 @@ def initialize_logging(output_dir: Union[str, Path], to_file=True, logger_name="
         logger.addHandler(fh)
         logger.info("Initialized logging to %s" % path)
     return logger
-
 
 def timestamp_dirname(suffix: Optional[str] = None) -> str:
     ts = datetime.now(dateutil.tz.tzlocal()).strftime("%Y_%m_%d_%H_%M_%S_%f")

@@ -27,7 +27,6 @@ MaskedExample = namedtuple(
     ["mask_eo", "x_eo", "y_eo", "day_of_year", "day_of_week", "latlon", "strategy"],
 )
 
-
 def make_mask(strategy: str, mask_ratio: float) -> Tuple[np.ndarray, np.ndarray]:
     """
     Make a mask for a given strategy and percentage of masked values.
@@ -86,7 +85,6 @@ def make_mask(strategy: str, mask_ratio: float) -> Tuple[np.ndarray, np.ndarray]
         raise ValueError(f"Unknown strategy {strategy} not in {MASK_STRATEGIES}")
 
     return np.repeat(mask, BAND_EXPANSION, axis=1)
-
 
 @dataclass
 class MaskParams:

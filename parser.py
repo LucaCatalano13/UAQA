@@ -7,11 +7,17 @@ def parse_arguments():
 
     
     # Architecture parameters
+    parser.add_argument("--only_test", default=False,
+                        help="avoid the train phase and test on --test_path")
+    
     parser.add_argument("--load_data_input", type=bool, default=True,
                         help="load checkpoint of input data")
     
     parser.add_argument("--input_data_path", type=str, default="data_file.pt",
                         help="path for loading input data")
+    
+    parser.add_argument("--model_presto_path", type=str, default="",
+                        help="path for loading presto")
     
     # Visualizations parameters
 

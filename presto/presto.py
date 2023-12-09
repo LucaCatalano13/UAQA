@@ -10,11 +10,50 @@ from torch import nn
 from torch.jit import Final
 from torch.nn import functional as F
 
-from .model import FinetuningHead, FineTuningModel, Seq2Seq
 from .utils import default_model_path, device
-
 from datasets.CollectionDataset import BANDS_GROUPS_IDX
 
+class Seq2Seq(nn.Module):
+    encoder: nn.Module
+    decoder: nn.Module
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        dynamic_world: torch.Tensor,
+        latlons: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+        month: Union[torch.Tensor, int] = 0,
+    ):
+        raise NotImplementedError
+
+class FinetuningHead(nn.Module):
+    def __init__(self, hidden_size: int, num_outputs: int, regression: bool) -> None:
+        super().__init__()
+
+        self.hidden_size = hidden_size
+        self.num_outputs = num_outputs
+        self.regression = regression
+        self.linear = nn.Linear(hidden_size, num_outputs)
+
+    def forward(self, x: torch.Tensor):
+        x = self.linear(x)
+        if (not self.regression) & (self.num_outputs == 1):
+            x = torch.sigmoid(x)
+        return x
+
+class FineTuningModel(nn.Module):
+    encoder: nn.Module
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        dynamic_world: torch.Tensor,
+        latlons: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+        month: Union[torch.Tensor, int] = 0,
+    ) -> torch.Tensor:
+        raise NotImplementedError
 
 def param_groups_lrd(
     model: FineTuningModel, weight_decay=0.05, no_weight_decay_list=[], layer_decay=0.75
