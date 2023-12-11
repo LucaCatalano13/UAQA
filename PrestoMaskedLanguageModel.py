@@ -30,27 +30,23 @@ def random_masking(mask, num_tokens_to_mask: int):
         mask = all_tokens_mask.reshape( mask.shape )
     return mask
 
-#TODO: not overlapping masks and mask ratio???
 def make_mask(x, strategy: str, mask_ratio: float):
     #x shape is [BS, TS , CH]
     num_timesteps = x.shape[1]
     num_band_groups = len(BANDS_GROUPS_IDX)
     #one mask for all the elem in batch repeated
-    mask_shape = ( num_timesteps , num_band_groups)
+    mask_shape = (num_timesteps , num_band_groups)
     mask = torch.full( mask_shape , False)
-    #fraction of TS*CH
     num_tokens_to_mask = int( (num_timesteps * num_band_groups) * mask_ratio)
     
-    # RANDOM BANDS
     if strategy == "random_combinations":
         mask = random_masking(mask, num_tokens_to_mask)
 
     elif strategy == "group_bands":
-        # next, we figure out how many tokens we can mask
         num_band_groups_to_mask = int(num_tokens_to_mask / num_timesteps)
         num_tokens_to_mask -= num_timesteps * num_band_groups_to_mask
         assert num_tokens_to_mask >= 0
-        # tuple because of mypy, which thinks lists can only hold one type
+        
         band_groups = list(range(len(BANDS_GROUPS_IDX)))
         band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
         
@@ -59,25 +55,24 @@ def make_mask(x, strategy: str, mask_ratio: float):
                 
         mask = random_masking(mask, num_tokens_to_mask)
         
-    # RANDOM TIMESTEPS
     elif strategy == "random_timesteps":
         timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
-        num_tokens_to_mask -= num_band_groups * timesteps_to_mask
-        timesteps = sample( list(range(len(num_timesteps))) , k=timesteps_to_mask )
+        num_tokens_to_mask -= num_band_groups * timesteps_to_mask 
+        timesteps = sample( list(range(len(num_timesteps))) , k = timesteps_to_mask )
         mask[timesteps] = True
-        mask = random_masking(mask, num_tokens_to_mask)
+        mask = random_masking( mask, num_tokens_to_mask )
 
     elif strategy == "chunk_timesteps":
         timesteps_to_mask = int(num_tokens_to_mask /num_band_groups )
         num_tokens_to_mask -=  num_band_groups * timesteps_to_mask
         start_idx = randint(0, num_timesteps - timesteps_to_mask)
-        mask[start_idx : start_idx + timesteps_to_mask] = True  # noqa
+        mask[start_idx : start_idx + timesteps_to_mask] = True 
         mask = random_masking(mask, num_tokens_to_mask)
+        
     else:
         raise ValueError(f"Unknown strategy {strategy} not in {MASK_STRATEGIES}")
 
     mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
-     
     return repeat(
             mask , "t g -> b t g", b=x.shape[0]
         )
@@ -125,8 +120,10 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         # define soft mask
-        # TODO
-        soft_mask = None
+        #TODO: train strategy problems: solve indx sampling, they must not be in hard
+        soft_mask = make_mask(x , mask_ratio=.2)
+        soft_mask_separated = torch.clone(soft_mask)
+        soft_mask_separated[ hard_mask.bool() ] = False
         # mask x
         soft_hard_mask = torch.logical_or(soft_mask.bool(), hard_mask.bool())
         # label = masked_x
