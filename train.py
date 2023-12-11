@@ -48,13 +48,16 @@ if __name__ == "__main__":
     # TODO
     test_dataloader = DataLoader()
 
-    encoder = Encoder()
-    decoder = Decoder(encoder.channel_embed)
-    presto = Presto(encoder, decoder)
+    
 
     if args.load_model_presto_path is not None:
+        #Checkpoint init
         presto_ml = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path)
     else:
+        #Random Xavier initialization
+        encoder = Encoder()
+        decoder = Decoder(encoder.channel_embed)
+        presto = Presto(encoder, decoder)
         presto_ml = PrestoMaskedLanguageModel(model = presto)
     
 

@@ -15,10 +15,12 @@ class PixelTimeSeries(Dataset):
     def __init__(self, num_timesteps: int, collection_dataset: CollectionDataset = None, bound: LandCover = None, input_data_path: str = None):
         super().__init__()
         self.num_timesteps = num_timesteps
+        
         if input_data_path is None:
             self.__create_data(collection_dataset, bound)
         else:
             self.__load_data(input_data_path)
+            
         assert self.len_pixel_timeseries() % num_timesteps == 0
 
     def __create_data(self, collection_dataset: CollectionDataset, bound: LandCover): 
@@ -41,7 +43,8 @@ class PixelTimeSeries(Dataset):
     def __getitem__(self, index):
         t_index = index % (self.len_pixel_timeseries() // self.num_timesteps)
         start_t = t_index * self.num_timesteps
-        end_t = (t_index + 1) * self.num_timesteps
+        #- 1 but excluded by [ start_t : end_t ]
+        end_t = (t_index +1) * self.num_timesteps
         flat_ix = index // self.len_pixel_timeseries()
         row_ix = flat_ix // FINAL_W
         col_ix = flat_ix % FINAL_H
@@ -52,5 +55,15 @@ class PixelTimeSeries(Dataset):
         # returns arrays as a pixel of shape (TUTTIGIORNI, 1, 1, CHANNEL), hard_mask as a pixel of shape (TUTTIGIORNI, 1, 1, CHANNEL), 
         # latlons as a pixel of shape (1, 1, 2), day_of_year as a pixel of shape (1, 1, 1), day_of_week as a pixel of shape (1, 1, 1)
         return arrays, hard_mask, latlons, day_of_year, day_of_week
+    
+    def retrieve_internal_indices(self, index):
+        t_index = index % (self.len_pixel_timeseries() // self.num_timesteps)
+        start_t = t_index * self.num_timesteps
+        end_t = (t_index + 1) * self.num_timesteps
+        flat_ix = index // self.len_pixel_timeseries()
+        row_ix = flat_ix // FINAL_W
+        col_ix = flat_ix % FINAL_H
+        return start_t, end_t - 1, row_ix, col_ix
+        
     # input modello:
     # (BS, TUTTIGIORNI, 1, CHANNEL) --> BS * tuttigiorni/timesteps  (timesteps , 1 , channel)

@@ -454,7 +454,7 @@ class Encoder(nn.Module):
                 d=tokens.shape[-1],
             )
             all_masks.append(group_mask)
-        
+            
         # TODO: separate timesteps and channels? --> probably origin of 1 in dimensions
         x = torch.cat(all_tokens, dim=1)
         mask = torch.cat(all_masks, dim=1)

@@ -40,13 +40,16 @@ NUM_BANDS = len(NORMED_BANDS)
 
 BANDS_GROUPS_IDX: OrderedDictType[str, List[int]] = OrderedDict(
     {
-        "S3": [NORMED_BANDS.index(b) for b in S3_BANDS],
-        "S5": [NORMED_BANDS.index(b) for b in S5_BANDS],
-        "ERA5": [NORMED_BANDS.index(b) for b in ERA5_BANDS],
-        "DEM": [NORMED_BANDS.index(b) for b in DEM_BANDS],
-        "LC": [NORMED_BANDS.index(b) for b in LC_BANDS]
+        "S3": [NORMED_BANDS.index(b) for b in S3_BANDS if b not in REMOVE_BANDS],
+        "S5": [NORMED_BANDS.index(b) for b in S5_BANDS if b not in REMOVE_BANDS],
+        "ERA5": [NORMED_BANDS.index(b) for b in ERA5_BANDS if b not in REMOVE_BANDS],
+        "DEM": [NORMED_BANDS.index(b) for b in DEM_BANDS if b not in REMOVE_BANDS],
+        "LC": [NORMED_BANDS.index(b) for b in LC_BANDS if b not in REMOVE_BANDS]
     }
 )
+
+BAND_EXPANSION = [len(x) for x in BANDS_GROUPS_IDX.values()]
+
 
 class CollectionDataset():
     def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):

@@ -1,12 +1,86 @@
 import torch
+import numpy as np
 from torch import nn
 from torch.nn import functional as F
 import pytorch_lightning as pl
 from pytorch_lightning.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
 from transformers import AutoModelForSequenceClassification
+from einops import repeat
 
 from presto.presto import Presto
-from datasets.CollectionDataset import BANDS, BANDS_GROUPS_IDX
+from random import choice, randint, random, sample
+from datasets.CollectionDataset import BANDS_GROUPS_IDX, BAND_EXPANSION
+
+MASK_STRATEGIES = (
+    "group_bands",
+    "random_timesteps",
+    "chunk_timesteps",
+    "random_combinations",
+)
+
+def random_masking(mask, num_tokens_to_mask: int):
+    if num_tokens_to_mask > 0:
+        # then, we flatten the mask and dw arrays
+        all_tokens_mask = mask.flatten()
+        unmasked_tokens = all_tokens_mask == False
+        idx = np.flatnonzero(unmasked_tokens)
+        np.random.shuffle(idx)
+        idx = idx[:num_tokens_to_mask]
+        all_tokens_mask[idx] = True
+        mask = all_tokens_mask.reshape( mask.shape )
+    return mask
+
+#TODO: not overlapping masks and mask ratio???
+def make_mask(x, strategy: str, mask_ratio: float):
+    #x shape is [BS, TS , CH]
+    num_timesteps = x.shape[1]
+    num_band_groups = len(BANDS_GROUPS_IDX)
+    #one mask for all the elem in batch repeated
+    mask_shape = ( num_timesteps , num_band_groups)
+    mask = torch.full( mask_shape , False)
+    #fraction of TS*CH
+    num_tokens_to_mask = int( (num_timesteps * num_band_groups) * mask_ratio)
+    
+    # RANDOM BANDS
+    if strategy == "random_combinations":
+        mask = random_masking(mask, num_tokens_to_mask)
+
+    elif strategy == "group_bands":
+        # next, we figure out how many tokens we can mask
+        num_band_groups_to_mask = int(num_tokens_to_mask / num_timesteps)
+        num_tokens_to_mask -= num_timesteps * num_band_groups_to_mask
+        assert num_tokens_to_mask >= 0
+        # tuple because of mypy, which thinks lists can only hold one type
+        band_groups = list(range(len(BANDS_GROUPS_IDX)))
+        band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
+        
+        for band_group in band_groups_to_mask:
+            mask[:, band_group] = True
+                
+        mask = random_masking(mask, num_tokens_to_mask)
+        
+    # RANDOM TIMESTEPS
+    elif strategy == "random_timesteps":
+        timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
+        num_tokens_to_mask -= num_band_groups * timesteps_to_mask
+        timesteps = sample( list(range(len(num_timesteps))) , k=timesteps_to_mask )
+        mask[timesteps] = True
+        mask = random_masking(mask, num_tokens_to_mask)
+
+    elif strategy == "chunk_timesteps":
+        timesteps_to_mask = int(num_tokens_to_mask /num_band_groups )
+        num_tokens_to_mask -=  num_band_groups * timesteps_to_mask
+        start_idx = randint(0, num_timesteps - timesteps_to_mask)
+        mask[start_idx : start_idx + timesteps_to_mask] = True  # noqa
+        mask = random_masking(mask, num_tokens_to_mask)
+    else:
+        raise ValueError(f"Unknown strategy {strategy} not in {MASK_STRATEGIES}")
+
+    mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
+     
+    return repeat(
+            mask , "t g -> b t g", b=x.shape[0]
+        )
 
 class BCELossWithSmoothing(nn.BCELoss):
     def __init__(
@@ -24,57 +98,6 @@ class BCELossWithSmoothing(nn.BCELoss):
             input, torch.clamp(target, min=self.smoothing, max=(1 - self.smoothing))
         )
 
-def random_masking(timesteps, mask, num_tokens_to_mask: int):
-    if num_tokens_to_mask > 0:
-        # then, we flatten the mask and dw arrays
-        all_tokens_mask = mask.flatten()
-        unmasked_tokens = all_tokens_mask == False
-        idx = torch.flatnonzero(unmasked_tokens)
-        torch.random.shuffle(idx)
-        idx = idx[:num_tokens_to_mask]
-        all_tokens_mask[idx] = True
-        mask = all_tokens_mask.reshape((timesteps, len(BANDS)))
-    return mask
-    
-def make_mask(timesteps, strategy: str, mask_ratio: float):
-    num_timesteps = timesteps
-    mask = torch.full((num_timesteps, len(BANDS)), False)
-    num_tokens_to_mask = int(((num_timesteps * len(BANDS))) * mask_ratio)
-
-    # RANDOM BANDS
-    if strategy == "random_combinations":
-        mask = random_masking(num_timesteps, mask, num_tokens_to_mask)
-
-    elif strategy == "group_bands":
-        # next, we figure out how many tokens we can mask
-        num_band_groups_to_mask = int(num_tokens_to_mask / num_timesteps)
-        num_tokens_to_mask -= num_timesteps * num_band_groups_to_mask
-        assert num_tokens_to_mask >= 0
-        # tuple because of mypy, which thinks lists can only hold one type
-        band_groups = list(range(len(BANDS_GROUPS_IDX)))
-        band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
-        for band_group in band_groups_to_mask:
-            mask[:, band_group] = True
-        mask = random_masking(mask, num_tokens_to_mask)
-
-    # RANDOM TIMESTEPS
-    elif strategy == "random_timesteps":
-        timesteps_to_mask = int(num_tokens_to_mask / (len(BANDS_GROUPS_IDX)))
-        num_tokens_to_mask -= (len(BANDS_GROUPS_IDX)) * timesteps_to_mask
-        timesteps = sample(TIMESTEPS_IDX, k=timesteps_to_mask)
-        mask[timesteps] = True
-        mask = random_masking(mask, num_tokens_to_mask)
-
-    elif strategy == "chunk_timesteps":
-        timesteps_to_mask = int(num_tokens_to_mask / (len(BANDS_GROUPS_IDX)))
-        num_tokens_to_mask -= (len(BANDS_GROUPS_IDX)) * timesteps_to_mask
-        start_idx = randint(0, NUM_TIMESTEPS - timesteps_to_mask)
-        mask[start_idx : start_idx + timesteps_to_mask] = True  # noqa
-        mask = random_masking(mask, num_tokens_to_mask)
-    else:
-        raise ValueError(f"Unknown strategy {strategy} not in {MASK_STRATEGIES}")
-
-    return np.repeat(mask, BAND_EXPANSION, axis=1)
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
 
