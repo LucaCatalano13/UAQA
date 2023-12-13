@@ -52,14 +52,14 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(
             train_dataset,
             batch_size=args.batch_size,
-            num_workers=4,
+            num_workers=2,
             shuffle=False,
         )
 
     val_dataloader = DataLoader(
             val_dataset,
             batch_size=args.batch_size,
-            num_workers=4,
+            num_workers=2,
             shuffle=False,
         )
     
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # Instantiate a trainer
     trainer = pl.Trainer(
-        accelerator='cpu',
+        accelerator='gpu',
         devices=[0],
         default_root_dir='./LOGS',  # Tensorflow can be used to viz
         num_sanity_val_steps=0,  # runs a validation step before stating training
