@@ -51,19 +51,19 @@ if __name__ == "__main__":
     train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.5, random_state=42)
     train_dataloader = DataLoader(
             train_dataset,
-            batch_size=64,
+            batch_size=args.batch_size,
             shuffle=False,
         )
 
     val_dataloader = DataLoader(
             val_dataset,
-            batch_size=64,
+            batch_size=args.batch_size,
             shuffle=False,
         )
     
     test_dataloader = DataLoader(
             test_dataset,
-            batch_size=64,
+            batch_size=args.batch_size,
             shuffle=False,
         )
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         default_root_dir='./LOGS',  # Tensorflow can be used to viz
         num_sanity_val_steps=0,  # runs a validation step before stating training
         precision=16,  # we use half precision to reduce  memory usage
-        max_epochs=args.max_epochs,
+        max_epochs=args.num_epochs,
         check_val_every_n_epoch=1,  # run validation every epoch
         callbacks=[checkpoint_cb],  # we only run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1,  # we reload the dataset to shuffle the order
