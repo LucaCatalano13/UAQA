@@ -4,7 +4,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Training parameters
-    parser.add_argument("--batch_size", type=int, default=64,
+    parser.add_argument("--batch_size", type=int, default=1,
                         help="batch size")
     
     parser.add_argument("--num_epochs", type=int, default=20,
@@ -14,7 +14,7 @@ def parse_arguments():
     parser.add_argument("--only_test", default=False,
                         help="avoid the train phase and test on --test_path")
     
-    parser.add_argument("--input_data_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
+    parser.add_argument("--input_data_path", type=str, default="data_file.pt",
                         help="path for loading input data")
     
     parser.add_argument("--input_test_data_path", type=str, default="data_test_file.pt",
