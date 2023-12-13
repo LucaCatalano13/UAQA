@@ -47,7 +47,7 @@ if __name__ == "__main__":
     
     # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
     
-    train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8)])
+    train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, 1000)
     train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.5)])
 
     train_dataloader = DataLoader(
