@@ -66,7 +66,7 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(
             test_dataset,
             batch_size=args.batch_size,
-            num_workers=4,
+            num_workers=2,
             shuffle=False,
         )
 
