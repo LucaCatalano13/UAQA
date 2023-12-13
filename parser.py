@@ -14,7 +14,7 @@ def parse_arguments():
     parser.add_argument("--only_test", default=False,
                         help="avoid the train phase and test on --test_path")
     
-    parser.add_argument("--input_data_path", type=str, default="data_file.pt",
+    parser.add_argument("--input_data_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
                         help="path for loading input data")
     
     parser.add_argument("--input_test_data_path", type=str, default="data_test_file.pt",
