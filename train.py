@@ -103,8 +103,6 @@ if __name__ == "__main__":
         reload_dataloaders_every_n_epochs=1,  # we reload the dataset to shuffle the order
         log_every_n_steps=20, 
     )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    presto.to(device)
     # Train or test only with a pretrained model
     if not args.only_test:
         # trainer.validate(model=presto_ml, dataloaders=val_dataloader)
