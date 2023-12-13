@@ -3,13 +3,12 @@ import numpy as np
 from torch import nn
 from torch.nn import functional as F
 import pytorch_lightning as pl
-from pytorch_lightning.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
-from transformers import AutoModelForSequenceClassification
 from einops import repeat
+import math
 
 from presto.presto import Presto
 from random import choice, randint, random, sample
-from datasets.CollectionDataset import BANDS_GROUPS_IDX, BAND_EXPANSION
+from datasets.CollectionDataset import BANDS, BANDS_GROUPS_IDX, BAND_EXPANSION
 
 MASK_STRATEGIES = (
     "group_bands",
@@ -18,64 +17,95 @@ MASK_STRATEGIES = (
     "random_combinations",
 )
 
-def random_masking(mask, num_tokens_to_mask: int):
-    if num_tokens_to_mask > 0:
-        # then, we flatten the mask and dw arrays
-        all_tokens_mask = mask.flatten()
-        unmasked_tokens = all_tokens_mask == False
-        idx = np.flatnonzero(unmasked_tokens)
-        np.random.shuffle(idx)
-        idx = idx[:num_tokens_to_mask]
-        all_tokens_mask[idx] = True
-        mask = all_tokens_mask.reshape( mask.shape )
+def random_masking(mask, hard_mask,  num_tokens_to_mask_array: int):
+    assert mask.shape[0] == num_tokens_to_mask_array.shape[0]
+    for i in range(num_tokens_to_mask_array.shape[0]):
+        if num_tokens_to_mask_array[i] > 0:
+            # then, we flatten the mask and dw arrays
+            all_tokens_mask = mask[i].flatten()
+            unmasked_tokens = np.logical_and( all_tokens_mask == False , hard_mask[i].flatten() == False )
+            idx = np.flatnonzero(unmasked_tokens)
+            np.random.shuffle(idx)
+            idx = idx[:num_tokens_to_mask_array[i]]
+            all_tokens_mask[idx] = True
+            mask[i] = all_tokens_mask.reshape( mask[i].shape )
     return mask
 
-def make_mask(x, strategy: str, mask_ratio: float):
-    #x shape is [BS, TS , CH]
+def make_mask(x, hard_mask, strategy: str, mask_ratio: float):
+    # x shape is [BS, TS , CH]
+    batch_size = x.shape[0]
     num_timesteps = x.shape[1]
-    num_band_groups = len(BANDS_GROUPS_IDX)
-    #one mask for all the elem in batch repeated
-    mask_shape = (num_timesteps , num_band_groups)
-    mask = torch.full( mask_shape , False)
-    num_tokens_to_mask = int( (num_timesteps * num_band_groups) * mask_ratio)
+    num_band_groups = len(BANDS)
+    mask_shape = (batch_size, num_timesteps , num_band_groups)
+    mask = torch.full(mask_shape , False)
+    # each element of batch has same ratio of masked tokens given the hard mask
+    num_tokens_to_mask = np.zeros(batch_size, dtype=int)
+    for i in range(batch_size):
+        num_tokens_to_mask[i] = int(((num_timesteps * num_band_groups) - hard_mask[i].sum()) * mask_ratio)
     
     if strategy == "random_combinations":
-        mask = random_masking(mask, num_tokens_to_mask)
+        mask = random_masking(mask, hard_mask, num_tokens_to_mask)
 
     elif strategy == "group_bands":
-        num_band_groups_to_mask = int(num_tokens_to_mask / num_timesteps)
-        num_tokens_to_mask -= num_timesteps * num_band_groups_to_mask
-        assert num_tokens_to_mask >= 0
-        
-        band_groups = list(range(len(BANDS_GROUPS_IDX)))
-        band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
-        
+        #num_band_groups_to_mask = int(num_tokens_to_mask / num_timesteps)
+        #num_tokens_to_mask -= num_timesteps * num_band_groups_to_mask
+        #assert num_tokens_to_mask >= 0
+        band_groups = list(BANDS_GROUPS_IDX.keys())
+        #band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
+        band_groups_to_mask = sample(band_groups, 1)
+
         for band_group in band_groups_to_mask:
-            mask[:, band_group] = True
-                
-        mask = random_masking(mask, num_tokens_to_mask)
-        
+            for idx in BANDS_GROUPS_IDX[band_group]:
+                mask[:, :, idx ] = True
+            mask[ hard_mask.bool() == True ] = False
+
+        for i in range(batch_size):
+            num_tokens_to_mask[i] -= mask[i].sum() 
+
+        mask = random_masking(mask, hard_mask, num_tokens_to_mask)
+
     elif strategy == "random_timesteps":
-        timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
-        num_tokens_to_mask -= num_band_groups * timesteps_to_mask 
-        timesteps = sample( list(range(len(num_timesteps))) , k = timesteps_to_mask )
-        mask[timesteps] = True
-        mask = random_masking( mask, num_tokens_to_mask )
+        # x shape is [BS, TS , CH]
+        # timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
+        # timesteps_to_mask = int(num_timesteps * mask_ratio)
+        print("Num timesteps: ", num_timesteps)
+        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
+        timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
+        print("Num timesteps to mask: ", num_timesteps_to_mask)
+        for i in range(batch_size):
+            print(sample(range(0, num_timesteps), num_timesteps_to_mask))
+            timesteps_to_mask[i] = sample(range(0, num_timesteps), num_timesteps_to_mask)
+            mask[i][timesteps_to_mask[i]] = True
+            mask[i][hard_mask[i].bool()] = False
+            n_timesteps_not_masked = hard_mask[i][timesteps_to_mask[i]].sum()
+            print("n_timesteps_not_masked", n_timesteps_not_masked)
+            num_tokens_to_mask[i] = num_timesteps_to_mask * num_band_groups
+            num_tokens_to_mask[i] -= n_timesteps_not_masked
+        mask = random_masking( mask, hard_mask, num_tokens_to_mask )
 
     elif strategy == "chunk_timesteps":
-        timesteps_to_mask = int(num_tokens_to_mask /num_band_groups )
-        num_tokens_to_mask -=  num_band_groups * timesteps_to_mask
-        start_idx = randint(0, num_timesteps - timesteps_to_mask)
-        mask[start_idx : start_idx + timesteps_to_mask] = True 
-        mask = random_masking(mask, num_tokens_to_mask)
+        print("Num timesteps: ", num_timesteps)
+        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
+        timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
+        print("Num timesteps to mask: ", num_timesteps_to_mask)
+        for i in range(batch_size):
+            start_timestep = sample(range(0, num_timesteps), 1)[0]
+            for ix, elem in enumerate(range(start_timestep, (start_timestep + num_timesteps_to_mask))):
+                timesteps_to_mask[i][ix] = elem % num_timesteps
+            print("timesteps_to_mask", timesteps_to_mask[i])
+            mask[i][timesteps_to_mask[i]] = True
+            mask[i][hard_mask[i].bool()] = False
+            n_timesteps_not_masked = hard_mask[i][timesteps_to_mask[i]].sum()
+            print("n_timesteps_not_masked", n_timesteps_not_masked)
+            num_tokens_to_mask[i] = num_timesteps_to_mask * num_band_groups
+            num_tokens_to_mask[i] -= n_timesteps_not_masked
+        mask = random_masking(mask, hard_mask, num_tokens_to_mask)
         
     else:
         raise ValueError(f"Unknown strategy {strategy} not in {MASK_STRATEGIES}")
 
-    mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
-    return repeat(
-            mask , "t g -> b t g", b=x.shape[0]
-        )
+    #mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
+    return mask
 
 class BCELossWithSmoothing(nn.BCELoss):
     def __init__(
@@ -93,9 +123,7 @@ class BCELossWithSmoothing(nn.BCELoss):
             input, torch.clamp(target, min=self.smoothing, max=(1 - self.smoothing))
         )
 
-
 class PrestoMaskedLanguageModel(pl.LightningModule):
-
     def __init__(self, model):
         super().__init__()
         self.lr = 0.001
@@ -120,7 +148,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         # define soft mask
-        #TODO: train strategy problems: solve indx sampling, they must not be in hard
         soft_mask = make_mask(x , mask_ratio=.2)
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
