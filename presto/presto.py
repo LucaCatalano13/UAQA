@@ -344,7 +344,7 @@ class Encoder(nn.Module):
         # the positional embedding whitin the sequence
         self.pos_embed = nn.Parameter(
             torch.zeros(1, max_sequence_length, pos_embedding_size), requires_grad=False
-        ).to(device)
+        ).cpu()
         # generate tables for lookup
         # day of year [0-365] in tot 366 days (all leap years)
         day_of_year_tab = get_day_of_year_encoding_table(temp_embedding_size)
