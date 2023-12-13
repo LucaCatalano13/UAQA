@@ -67,7 +67,7 @@ if __name__ == "__main__":
             shuffle=False,
         )
 
-    if args.load_model_presto_path is not None:
+    if args.model_presto_path is not None:
         #Checkpoint init
         presto_ml = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path)
     else:
