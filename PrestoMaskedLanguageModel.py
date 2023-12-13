@@ -151,7 +151,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
         # mask x
-        soft_hard_mask = torch.logical_or(soft_mask.bool(), hard_mask.bool())
+        soft_hard_mask = torch.logical_or(soft_mask.cpu().bool(), hard_mask.cpu().bool())
         # label = masked_x
         labels = torch.Tensor(x[soft_mask])
         # forward
