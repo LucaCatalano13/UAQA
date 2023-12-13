@@ -52,18 +52,21 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(
             train_dataset,
             batch_size=args.batch_size,
+            num_workers=4,
             shuffle=False,
         )
 
     val_dataloader = DataLoader(
             val_dataset,
             batch_size=args.batch_size,
+            num_workers=4,
             shuffle=False,
         )
     
     test_dataloader = DataLoader(
             test_dataset,
             batch_size=args.batch_size,
+            num_workers=4,
             shuffle=False,
         )
 
