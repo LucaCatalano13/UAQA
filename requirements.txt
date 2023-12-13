@@ -1,11 +1,11 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
 
-torch<=2.1.1+cu116
-torchvision==0.14.1+cu116
-faiss-cpu==1.7.3
-pytorch-lightning<=1.9.4+cu116
-pytorch-metric-learning<=2.0.1+cu116
-torchaudio==<compatible version for CUDA 11.6>
+torch
+torchvision
+faiss-cpu
+pytorch-lightning
+pytorch-metric-learning
+torchaudio
 numpy==1.24.1
 rasterio==1.3.4
 shapely==2.0.0
