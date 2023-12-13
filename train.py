@@ -106,6 +106,6 @@ if __name__ == "__main__":
 
     # Train or test only with a pretrained model
     if not args.only_test:
-        trainer.validate(model=presto_ml, dataloaders=val_dataloader)
+        # trainer.validate(model=presto_ml, dataloaders=val_dataloader)
         trainer.fit(model=presto_ml, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
     trainer.test(model=presto_ml, dataloaders=test_dataloader)
