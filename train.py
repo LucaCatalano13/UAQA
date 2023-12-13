@@ -104,7 +104,6 @@ if __name__ == "__main__":
         log_every_n_steps=1, 
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
     presto.to(device)
     # Train or test only with a pretrained model
     if not args.only_test:
