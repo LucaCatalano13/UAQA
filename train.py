@@ -45,7 +45,10 @@ if __name__ == "__main__":
         test_bound = test_land_cover.get_bound()
         test_dataset = PixelTimeSeries(num_timesteps=5, collection_dataset=test_collection_dataset, bound=test_bound)
     
-    train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
+    # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
+    
+    train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
+    train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.5), int(len(train_dataset)*0.5)])
 
     train_dataloader = DataLoader(
             train_dataset,
