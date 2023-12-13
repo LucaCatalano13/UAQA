@@ -354,7 +354,7 @@ class Encoder(nn.Module):
         self.day_of_week_embed = nn.Embedding.from_pretrained(day_of_week_tab, freeze=True)
         # TODO: len(self.band_groups) + 1 per latlons?
         self.channel_embed = nn.Embedding(
-            num_embeddings=len(self.band_groups), embedding_dim=channel_embedding_size
+            num_embeddings=len(self.band_groups) + 1, embedding_dim=channel_embedding_size
         )
 
         self.initialize_weights()
