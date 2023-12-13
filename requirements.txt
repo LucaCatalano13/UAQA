@@ -14,3 +14,4 @@ torch==1.13.1
 torchvision==0.14.1
 pytorch-lightning==1.9.4
 pytorch-metric-learning==2.0.1
+torchaudio==2.1.0+cu118
