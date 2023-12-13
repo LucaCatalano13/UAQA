@@ -4,7 +4,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Training parameters
-    parser.add_argument("--batch_size", type=int, default=8,
+    parser.add_argument("--batch_size", type=int, default=4,
                         help="batch size")
     
     parser.add_argument("--num_epochs", type=int, default=20,
