@@ -134,7 +134,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
 
     def configure_loss_function(self):
-        return BCELossWithSmoothing()
+        return nn.CrossEntropyLoss()
 
     def loss_function(self, outputs, labels):
         return self.loss_fn(outputs, labels)
