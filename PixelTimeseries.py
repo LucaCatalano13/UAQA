@@ -21,8 +21,6 @@ class PixelTimeSeries(Dataset):
         else:
             self.__load_data(input_data_path)
             
-        assert self.len_pixel_timeseries() % num_timesteps == 0
-
     def __create_data(self, collection_dataset: CollectionDataset, bound: LandCover): 
         self.data =  process_images(collection_dataset, bound)
     
