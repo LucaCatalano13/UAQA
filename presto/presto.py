@@ -344,7 +344,7 @@ class Encoder(nn.Module):
         # the positional embedding whitin the sequence
         self.pos_embed = nn.Parameter(
             torch.zeros(1, max_sequence_length, pos_embedding_size), requires_grad=False
-        ).cpu()
+        ).to(device)
         # generate tables for lookup
         # day of year [0-365] in tot 366 days (all leap years)
         day_of_year_tab = get_day_of_year_encoding_table(temp_embedding_size)
@@ -418,7 +418,7 @@ class Encoder(nn.Module):
 
         positional_embedding = repeat(
             self.pos_embed[:, : x.shape[1], :], "b t d -> (repeat b) t d", repeat=x.shape[0]
-        )
+        ).to(device)
 
         # we assume the number of masked patches is the same
         # for all items in the batch. Otherwise things become a headache
