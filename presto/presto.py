@@ -418,7 +418,7 @@ class Encoder(nn.Module):
 
         positional_embedding = repeat(
             self.pos_embed[:, : x.shape[1], :], "b t d -> (repeat b) t d", repeat=x.shape[0]
-        )
+        ).to(device)
 
         # we assume the number of masked patches is the same
         # for all items in the batch. Otherwise things become a headache
