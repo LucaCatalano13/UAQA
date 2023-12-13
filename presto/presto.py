@@ -344,7 +344,7 @@ class Encoder(nn.Module):
         # the positional embedding whitin the sequence
         self.pos_embed = nn.Parameter(
             torch.zeros(1, max_sequence_length, pos_embedding_size), requires_grad=False
-        ).to(device)
+        )
         # generate tables for lookup
         # day of year [0-365] in tot 366 days (all leap years)
         day_of_year_tab = get_day_of_year_encoding_table(temp_embedding_size)
@@ -418,7 +418,7 @@ class Encoder(nn.Module):
 
         positional_embedding = repeat(
             self.pos_embed[:, : x.shape[1], :], "b t d -> (repeat b) t d", repeat=x.shape[0]
-        ).to(device)
+        )
 
         # we assume the number of masked patches is the same
         # for all items in the batch. Otherwise things become a headache
@@ -429,7 +429,7 @@ class Encoder(nn.Module):
             # and as values a linear combination (FC) from the number of bands in the channel_group
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
-            tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs]).to(device)
+            tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
                 torch.tensor(self.band_group_to_idx[channel_group]).long().to(device)
