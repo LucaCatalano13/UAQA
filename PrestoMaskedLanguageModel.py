@@ -23,7 +23,7 @@ def random_masking(mask, hard_mask,  num_tokens_to_mask_array: int):
         if num_tokens_to_mask_array[i] > 0:
             # then, we flatten the mask and dw arrays
             all_tokens_mask = mask[i].flatten()
-            unmasked_tokens = np.logical_and( all_tokens_mask == False , hard_mask[i].flatten() == False )
+            unmasked_tokens = np.logical_and( all_tokens_mask.cpu() == False , hard_mask[i].cpu().flatten() == False )
             idx = np.flatnonzero(unmasked_tokens)
             np.random.shuffle(idx)
             idx = idx[:num_tokens_to_mask_array[i]]
