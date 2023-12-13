@@ -16,7 +16,7 @@ def parse_arguments():
     parser.add_argument("--input_test_data_path", type=str, default="data_test_file.pt",
                         help="path for loading input data")
     
-    parser.add_argument("--model_presto_path", type=str, default="",
+    parser.add_argument("--model_presto_path", type=str, default=None,
                         help="path for loading presto")
     
     # Visualizations parameters
