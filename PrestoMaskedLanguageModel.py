@@ -106,7 +106,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float):
     #mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
     return mask
 
-class BCELossWithSmoothing(nn.BCELoss):
+class CELossWithSmoothing(nn.CELoss):
     def __init__(
         self, smoothing: float = 0.1, weight=None, size_average=None, reduce=None, reduction="mean"
     ):
@@ -134,7 +134,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
 
     def configure_loss_function(self):
-        return BCELossWithSmoothing()
+        return CELossWithSmoothing()
 
     def loss_function(self, outputs, labels):
         return self.loss_fn(outputs, labels)
