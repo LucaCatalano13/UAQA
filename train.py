@@ -20,7 +20,7 @@ from PrestoMaskedLanguageModel import PrestoMaskedLanguageModel
 if __name__ == "__main__":
     args = parser.parse_arguments()
     if args.input_data_path is not None:
-        train_dataset = PixelTimeSeries(num_timesteps=5, input_data_path = args.input_data_path)
+        train_dataset = PixelTimeSeries(num_timesteps=6, input_data_path = args.input_data_path)
     else:
         train_era = Era5(dataset_folder = args.era5_path, legend_folder = args.era5_legend_path)
         train_dem = Dem(dataset_folder = args.dem_path, legend_folder = args.dem_legend_path)
