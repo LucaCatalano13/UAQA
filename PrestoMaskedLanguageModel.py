@@ -147,7 +147,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         # define soft mask
-        soft_mask = make_mask(x=x, hard_mask=hard_mask, strategy= MASK_STRATEGIES[3],mask_ratio=.2)
+        soft_mask = make_mask(x=x, hard_mask=hard_mask, strategy= MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)],mask_ratio=.2)
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
         # mask x

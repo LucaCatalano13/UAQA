@@ -101,7 +101,7 @@ if __name__ == "__main__":
         check_val_every_n_epoch=1,  # run validation every epoch
         callbacks=[checkpoint_cb],  # we only run the checkpointing callback (you can add more)
         reload_dataloaders_every_n_epochs=1,  # we reload the dataset to shuffle the order
-        log_every_n_steps=1, 
+        log_every_n_steps=20, 
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     presto.to(device)
