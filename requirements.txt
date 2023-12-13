@@ -10,8 +10,8 @@ isort==5.10.1
 mypy==1.1.1
 wandb==0.13.5
 einops==0.3.2
-torch==1.13.1
-torchvision==0.14.1
-pytorch-lightning==1.9.4
-pytorch-metric-learning==2.0.1
-torchaudio==2.1.0+cu118
+torch
+torchvision
+pytorch-lightning
+pytorch-metric-learning
+torchaudio
