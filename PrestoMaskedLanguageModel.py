@@ -106,7 +106,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float):
     #mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
     return mask
 
-class CELossWithSmoothing(nn.CELoss):
+class CELossWithSmoothing(nn.CrossEntropyLoss):
     def __init__(
         self, smoothing: float = 0.1, weight=None, size_average=None, reduce=None, reduction="mean"
     ):
