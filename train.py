@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from tqdm import tqdm
+from sklearn.model_selection import train_test_split
 
 from datasets.Era5 import Era5
 from datasets.Dem import Dem
@@ -10,7 +11,6 @@ from datasets.Sentinel3 import Sentinel3
 from datasets.Sentinel5 import Sentinel5
 from datasets.LandCover import LandCover
 from datasets.CollectionDataset import CollectionDataset
-from utils import process_images, get_day_of_year_and_day_of_week
 import parser
 
 from presto.presto import Encoder, Decoder, Presto
@@ -47,9 +47,8 @@ if __name__ == "__main__":
     
     # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
     
-    train_dataset, test_dataset = torch.utils.data.random_split(train_dataset, 1000)
-    train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.5)])
-
+    train_dataset, test_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42)
+    train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.5, random_state=42)
     train_dataloader = DataLoader(
             train_dataset,
             batch_size=64,
