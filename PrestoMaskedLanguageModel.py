@@ -68,35 +68,28 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float):
         # x shape is [BS, TS , CH]
         # timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
         # timesteps_to_mask = int(num_timesteps * mask_ratio)
-        print("Num timesteps: ", num_timesteps)
+
         num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
         timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
-        print("Num timesteps to mask: ", num_timesteps_to_mask)
         for i in range(batch_size):
-            print(sample(range(0, num_timesteps), num_timesteps_to_mask))
             timesteps_to_mask[i] = sample(range(0, num_timesteps), num_timesteps_to_mask)
             mask[i][timesteps_to_mask[i]] = True
             mask[i][hard_mask[i].bool()] = False
             n_timesteps_tokens_not_masked = hard_mask[i][timesteps_to_mask[i]].sum()
-            print("n_timesteps_not_masked", n_timesteps_tokens_not_masked)
             num_tokens_to_mask[i] = n_timesteps_tokens_not_masked
         mask = random_masking( mask, hard_mask, num_tokens_to_mask )
 
     elif strategy == "chunk_timesteps":
-        print("Num timesteps: ", num_timesteps)
         num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
         timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
-        print("Num timesteps to mask: ", num_timesteps_to_mask)
         for i in range(batch_size):
             start_timestep = sample(range(0, num_timesteps), 1)[0]
             if (start_timestep + num_timesteps_to_mask) > num_timesteps:
                 start_timestep -= ((start_timestep + num_timesteps_to_mask) - num_timesteps)
             timesteps_to_mask[i] = range(start_timestep, start_timestep + num_timesteps_to_mask)
-            print("timesteps_to_mask", timesteps_to_mask[i])
             mask[i][timesteps_to_mask[i]] = True
             mask[i][hard_mask[i].bool()] = False
             n_timesteps_not_masked = hard_mask[i][timesteps_to_mask[i]].sum()
-            print("n_timesteps_not_masked", n_timesteps_not_masked)
             num_tokens_to_mask[i] = n_timesteps_not_masked
         mask = random_masking(mask, hard_mask, num_tokens_to_mask)
         
