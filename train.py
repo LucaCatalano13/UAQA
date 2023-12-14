@@ -92,8 +92,8 @@ if __name__ == "__main__":
 
     # Instantiate a trainer
     trainer = pl.Trainer(
-        accelerator='cpu',
-        # devices=[0],
+        accelerator='gpu',
+        devices=[0],
         default_root_dir='./LOGS',  # Tensorflow can be used to viz
         num_sanity_val_steps=0,  # runs a validation step before stating training
         precision=16,  # we use half precision to reduce  memory usage

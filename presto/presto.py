@@ -275,10 +275,7 @@ def get_day_of_week_encoding_table(d_hid):
     sin_table = np.sin(np.stack([angles for _ in range(d_hid // 4)], axis=-1))
     cos_table = np.cos(np.stack([angles for _ in range(d_hid // 4)], axis=-1))
     day_of_week_table = np.concatenate([sin_table[:-1], cos_table[:-1]], axis=-1)
-    if torch.cuda.is_available():
-        return torch.FloatTensor(day_of_week_table).cuda()
-    else:
-        return torch.FloatTensor(day_of_week_table)
+    return torch.FloatTensor(day_of_week_table).to(device)
 
 def get_day_of_year_encoding_table(d_hid):
     """Sinusoid days of the year encoding table, for 366 days indexed from 0-365"""
@@ -287,10 +284,7 @@ def get_day_of_year_encoding_table(d_hid):
     sin_table = np.sin(np.stack([angles for _ in range(d_hid // 4)], axis=-1))
     cos_table = np.cos(np.stack([angles for _ in range(d_hid // 4)], axis=-1))
     day_of_year_table = np.concatenate([sin_table[:-1], cos_table[:-1]], axis=-1)
-    if torch.cuda.is_available():
-        return torch.FloatTensor(day_of_year_table).cuda()
-    else:
-        return torch.FloatTensor(day_of_year_table)
+    return torch.FloatTensor(day_of_year_table).to(device)
 
 class Encoder(nn.Module):
     def __init__(
