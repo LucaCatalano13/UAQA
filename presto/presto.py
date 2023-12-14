@@ -407,6 +407,7 @@ class Encoder(nn.Module):
         # array of the dayOfWeek, dayOfYear analized in the batch
         # ==> given in function arguments
         # encode the months using sin cos --> paper's formula
+        print("Day of year: ", day_of_year)
         day_of_week_embedding = self.day_of_week_embed(day_of_week)
         day_of_year_embedding = self.day_of_year_embed(day_of_year)
 
