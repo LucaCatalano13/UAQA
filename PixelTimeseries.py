@@ -20,8 +20,8 @@ class PixelTimeSeries(Dataset):
             self.__create_data(collection_dataset, bound)
         else:
             self.__load_data(input_data_path)
-        till = 500
-        self.data = (self.data[0][:till], self.data[1][:till], self.data[2][:till], self.data[3][:till])
+        # till = 500
+        # self.data = (self.data[0][:till], self.data[1][:till], self.data[2][:till], self.data[3][:till])
 
     def __create_data(self, collection_dataset: CollectionDataset, bound: LandCover): 
         self.data =  process_images(collection_dataset, bound)
