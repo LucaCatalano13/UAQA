@@ -432,7 +432,7 @@ class Encoder(nn.Module):
             print("Layer", self.eo_patch_embed[channel_group])
             print("Channel Group", channel_group)
             print("Channel Idxs", channel_idxs)
-            print("X", x[:, :, channel_idxs], x[:, :, channel_idxs].shape)
+            print("X", x[:, :, channel_idxs].shape)
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             print("Token", tokens.shape)
             # create an embedding of the channel group --> lookup table
