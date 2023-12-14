@@ -407,7 +407,6 @@ class Encoder(nn.Module):
         # array of the dayOfWeek, dayOfYear analized in the batch
         # ==> given in function arguments
         # encode the months using sin cos --> paper's formula
-        print("Day of year: ", day_of_year)
         day_of_week_embedding = self.day_of_week_embed(day_of_week)
         day_of_year_embedding = self.day_of_year_embed(day_of_year)
 
@@ -424,10 +423,6 @@ class Encoder(nn.Module):
             # and as values a linear combination (FC) from the number of bands in the channel_group
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
-            print(channel_group, channel_idxs)
-            print(x.shape)
-            print(x[:, :, channel_idxs].shape)
-            print(self.eo_patch_embed[channel_group])
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(

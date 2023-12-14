@@ -152,7 +152,7 @@ def get_day_of_year_and_day_of_week(date_list):
         date = datetime.datetime.strptime(str(date_str), "%Y-%m-%d")
 
         # Day of Year
-        day_of_year.append(date.timetuple().tm_yday)
+        day_of_year.append(date.timetuple().tm_yday - 1)
 
         # Day of Week (Monday is 0 and Sunday is 6)
         day_of_week.append(date.weekday())
