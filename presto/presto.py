@@ -425,6 +425,8 @@ class Encoder(nn.Module):
             # return an initial embedding of the channel group
             print(channel_group, channel_idxs)
             print(x.shape)
+            print(x[:, :, channel_idxs].shape)
+            print(self.eo_patch_embed[channel_group])
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
