@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # Instantiate a trainer
     trainer = pl.Trainer(
-        accelerator='gpu',
+        accelerator='cpu',
         devices=[0],
         default_root_dir='./LOGS',  # Tensorflow can be used to viz
         num_sanity_val_steps=0,  # runs a validation step before stating training
