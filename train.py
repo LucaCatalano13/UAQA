@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
+import logging
 
 from datasets.Era5 import Era5
 from datasets.Dem import Dem
