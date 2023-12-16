@@ -71,6 +71,9 @@ class CollectionDataset():
       self.mean_all_bands_dataset.extend(self.era_mean_per_bands)
       self.mean_all_bands_dataset.extend([self.dem_mean_per_bands[0]])
       self.mean_all_bands_dataset.extend(self.land_cover_mean_per_bands)
+      
+      self.len_retained_dates = None
+      self.__temporal_alignment()
 
     def __len__(self):
       if self.len_retained_dates is not None:
