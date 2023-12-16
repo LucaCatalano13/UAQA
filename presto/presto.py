@@ -654,7 +654,7 @@ class PrestoFineTuningModel(FineTuningModel):
                 eval_task=True,
             )
         )
-# TODO: apply hardmask before the encoder channel emedding
+
 class Presto(Seq2Seq):
     def __init__(self, encoder, decoder):
         super().__init__()

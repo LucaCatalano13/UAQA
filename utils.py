@@ -146,7 +146,12 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
         
         # Generate the coordinates of each pixel 
         latlons[i, :, :] = get_city_grids(bounds)
-
+        
+    # fill the nan value with the mean of the band evaluated in all the dataset    
+    nan_indices = np.argwhere(np.isnan(arrays))
+    for idx in tqdm(nan_indices):
+      arrays[tuple(idx)] = collection_dataset.mean_all_bands_dataset[idx[-1]]
+    
     return (torch.Tensor(arrays), torch.Tensor(hard_masks), torch.Tensor(latlons), torch.Tensor(dates))
 
 def get_day_of_year_and_day_of_week(date_list):

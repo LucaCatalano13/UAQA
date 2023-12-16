@@ -3,6 +3,7 @@ from functools import reduce
 from collections import OrderedDict
 from typing import OrderedDict as OrderedDictType
 from typing import List
+from tqdm import tqdm
 
 from .Dem import DEM_BANDS, DEM_SHIFT_VALUES, DEM_DIV_VALUES
 from .LandCover import LC_BANDS, LC_SHIFT_VALUES, LC_DIV_VALUES
@@ -53,14 +54,23 @@ BAND_EXPANSION = [len(x) for x in BANDS_GROUPS_IDX.values()]
 
 class CollectionDataset():
     def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):
-      # read paths of batch files and metadata
       self.era = era
+      self.era_mean_per_bands = self.__get_mean_per_bands(self.era)
       self.dem = dem
+      self.dem_mean_per_bands = self.__get_mean_per_bands(self.dem)
       self.sentinel3 = sentinel3
+      self.sentinel3_mean_per_bands = self.__get_mean_per_bands(self.sentinel3)
       self.sentinel5 = sentinel5
+      self.sentinel5_mean_per_bands = self.__get_mean_per_bands(self.sentinel5)
       self.land_cover = land_cover
-      self.len_retained_dates = None
-      self.__temporal_alignment()
+      self.land_cover_mean_per_bands = self.__get_mean_per_bands(self.land_cover)
+
+      self.mean_all_bands_dataset = []
+      self.mean_all_bands_dataset.extend(self.sentinel3_mean_per_bands[:-1])
+      self.mean_all_bands_dataset.extend(self.sentinel5_mean_per_bands[::2])
+      self.mean_all_bands_dataset.extend(self.era_mean_per_bands)
+      self.mean_all_bands_dataset.extend([self.dem_mean_per_bands[0]])
+      self.mean_all_bands_dataset.extend(self.land_cover_mean_per_bands)
 
     def __len__(self):
       if self.len_retained_dates is not None:
@@ -86,6 +96,16 @@ class CollectionDataset():
       self.sentinel3.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
       self.sentinel5.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
 
+    def __get_mean_per_bands(self, dataset):
+        shape = dataset[0].shape
+        sum_values_per_bands = np.zeros((shape[0]))
+        n_values = len(dataset.files) * shape[1] * shape[2]
+        for i in tqdm(range(len(dataset.files))):
+          raster = dataset[i]
+          for j in range(raster.shape[0]):
+            sum_values_per_bands[j] += np.nansum(raster[j])
+        return sum_values_per_bands / n_values
+
     def __getitem__(self, index):
       # dynamic
       era = self.era.get_item_temporal_aligned(index)
@@ -95,3 +115,4 @@ class CollectionDataset():
       lc = self.land_cover[0]
       dem = self.dem[0]
       return era, lc, s3, s5, dem
+
