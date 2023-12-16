@@ -70,7 +70,8 @@ def construct_single_presto_input(
         # add the data to x and set the corresponding mask to 0
         x[:, input_to_output_mapping] = data[:, kept_input_band_idxs]
         hard_mask[:, input_to_output_mapping] = 0
-    
+        
+    #TODO: here we generate the real hard mask of the final dataset data (x) is in resize format already
     # set the mask to 1 if the data is nan
     hard_mask[x.isnan()] = 1
 
@@ -79,8 +80,6 @@ def construct_single_presto_input(
     return x, hard_mask
 
 def get_city_grids(bounds, radius=0.0045):
-    # TODO: not used, we are already in 4326 and we have to go back to 4326
-    #converted is used only in gridbox, that we haven't
     l = np.ndarray((FINAL_H, FINAL_W, 2))
     converted = Transformer.from_crs(CRS.from_epsg(4326), CRS.from_epsg(32632), always_xy=True).transform
     xmin, ymax, xmax, ymin = bounds
@@ -109,19 +108,19 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
     latlons = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W, 2), dtype=np.float32)
     dates = np.ndarray(shape=(amount_of_data, FINAL_H, FINAL_W), dtype=object)
 
+    #for each available day
     for i in tqdm(range(amount_of_data)):
         era, lc, s3, s5, dem, date = collection_dataset[i]
-        # TODO: EPSG:4326 --> EPSG:32632 --> Ma poi su Slack dite di ritornare a EPSG:4326
-        # convert box
-        # function in SLACK to transform
+        #for each pixel
         for row_idx in range(FINAL_H):
             for col_idx in range(FINAL_W):
-                # then, get the eo_data, mask and dynamic world
+                # then, get the per pixel data and mask for all the timestamps
                 era_for_pixel = torch.from_numpy(era[:, row_idx, col_idx]).float()
                 s3_for_pixel = torch.from_numpy(s3[:-1, row_idx, col_idx]).float()
                 s5_for_pixel = torch.from_numpy(s5[::2, row_idx, col_idx]).float()
                 dem_for_pixel = torch.from_numpy(dem[:-1, row_idx, col_idx]).float()
                 lc_for_pixel = torch.from_numpy(lc[:, row_idx, col_idx]).float()
+                
                 # add 1 dimension to stack the arrays (we want it divided by channels)
                 era_with_time_dimension = era_for_pixel.unsqueeze(0)
                 s3_with_time_dimension = s3_for_pixel.unsqueeze(0)
@@ -129,6 +128,7 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
                 dem_with_time_dimension = dem_for_pixel.unsqueeze(0)
                 lc_with_time_dimension = lc_for_pixel.unsqueeze(0)
 
+                #stack all BANDS of different sources and generate its hard mask
                 x, hard_mask = construct_single_presto_input(
                     s3=s3_with_time_dimension, s3_bands=S3_BANDS,
                     era5=era_with_time_dimension, era5_bands=ERA5_BANDS,
@@ -136,10 +136,15 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
                     dem=dem_with_time_dimension, dem_bands=DEM_BANDS,
                     lc=lc_with_time_dimension, lc_bands=LC_BANDS
                 )
+                
+                #save all channels
                 arrays[i, row_idx, col_idx, :] = x
+                #save relative hard masks
                 hard_masks[i, row_idx, col_idx, :] = hard_mask
+                #save date
                 dates[i, row_idx, col_idx] = date
-
+        
+        # Generate the coordinates of each pixel 
         latlons[i, :, :] = get_city_grids(bounds)
 
     return (torch.Tensor(arrays), torch.Tensor(hard_masks), torch.Tensor(latlons), torch.Tensor(dates))
@@ -151,13 +156,13 @@ def get_day_of_year_and_day_of_week(date_list):
     for date_str in date_list:
         date = datetime.datetime.strptime(str(date_str), "%Y-%m-%d")
 
-        # Day of Year
+        # Day of Year (1st Jenuary is 1, so -1 to use them as indices)
         day_of_year.append(date.timetuple().tm_yday - 1)
 
         # Day of Week (Monday is 0 and Sunday is 6)
         day_of_week.append(date.weekday())
 
-    # Convert lists to numpy arrays
+    # Convert lists to tensors
     day_of_year_tensor = torch.tensor(day_of_year)
     day_of_week_tensor = torch.tensor(day_of_week)
 

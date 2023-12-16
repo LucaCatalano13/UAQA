@@ -28,7 +28,16 @@ class ADSP_Dataset (Dataset):
 
     def transform(self, raster_data):
         return raster_data
-
+    
+    #TODO: implement in each class
+    def generate_false_data( self, missing_date ):
+        #take missing_date and put in a list self.missing_dates
+        #In the get_item you take file and look if not in missing_dates
+        #   open file
+        #else
+        #   generate false data
+        pass
+    
     def get_item_temporal_aligned(self, index):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file

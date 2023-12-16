@@ -67,6 +67,8 @@ class CollectionDataset():
         return self.len_retained_dates
       return None
 
+    #TODO: here we remove the dates
+    #TODO: we have to generate fictisius data in those dates all at nan with correct format and mask all TRUE
     def __temporal_alignment(self):
       # retrieve dates from path
       s3_dates = np.unique([f.split('/')[2].split('T')[0] for f in self.sentinel3.files])
