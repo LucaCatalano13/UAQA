@@ -4,16 +4,17 @@ import json
 from torch.utils.data import Dataset
 import numpy as np
 from glob import glob
+from datasets.utils import FINAL_H, FINAL_W
 
 class ADSP_Dataset (Dataset):
     """
     Main Class for commmon procedures
     """
-    def __init__(self, dataset_folder: str, legend_folder: str, old_new_classes_dict = None):
+    def __init__(self, dataset_folder: str, legend_folder: str, n_bands: int):
         super().__init__()
         # read paths of files
         self.files = sorted(glob(f"{dataset_folder}/*.tiff", recursive = True))
-        self.old_new_classes_dict = old_new_classes_dict
+        self.n_bands = n_bands
         # paths of files temporal aligned
         self.files_temporal_aligned = None
         # read paths of legend linked with file
@@ -23,7 +24,7 @@ class ADSP_Dataset (Dataset):
         # save the original shape of the raster of the dataset
         self.original_raster_shape = rasterio.open(self.files[0]).shape
         # save the resized shape of the raster of the dataset
-        self.shape_resized_raster = self[0].shape
+        self.shape_resized_raster = (self.n_bands, FINAL_H, FINAL_W)
     
     def __len__(self) -> int:
         # the len of the dataset equals to the number of the files it contains

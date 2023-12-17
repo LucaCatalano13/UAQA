@@ -32,7 +32,7 @@ ERA5_DIV_VALUES = [35.0] * len(ERA5_BANDS)
 class Era5(ADSP_Dataset):
     #TODO: ci sono valori nan nella band, come li risolvo?
     def __init__(self, dataset_folder: str, legend_folder: str):
-      super().__init__(dataset_folder , legend_folder)
+      super().__init__(dataset_folder , legend_folder, len(ERA5_BANDS))
 
     def transform(self, raster_data: np.array, final_w: int = FINAL_W, final_h: int = FINAL_H) -> np.array:
       new_raster_data = []

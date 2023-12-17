@@ -21,7 +21,7 @@ S5_DIV_VALUES = [float(1e4)] * len(S5_BANDS)
 
 class Sentinel5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
-      super().__init__(dataset_folder , legend_folder)
+      super().__init__(dataset_folder , legend_folder, len(S5_BANDS))
 
     def __getitem__(self, index: int) -> np.array:
       file = self.files[index]

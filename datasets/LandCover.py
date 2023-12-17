@@ -46,7 +46,7 @@ LC_DIV_VALUES = [2000.0]
 
 class LandCover(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str, old_new_classes_dict = LC_MAP_DICT_CLASSES):
-      super().__init__(dataset_folder, legend_folder)
+      super().__init__(dataset_folder, legend_folder, len(LC_BANDS))
       self.original_taxonomy = json.load(open(self.labels_legends[0]))
       self.old_new_classes_dict = old_new_classes_dict
 
