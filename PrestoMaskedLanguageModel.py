@@ -99,22 +99,6 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float):
     #mask = np.repeat(mask, BAND_EXPANSION, axis=1)   
     return mask
 
-class CELossWithSmoothing(nn.CrossEntropyLoss):
-    def __init__(
-        self, smoothing: float = 0.1, weight=None, size_average=None, reduce=None, reduction="mean"
-    ):
-        super().__init__(
-            weight=weight, size_average=size_average, reduce=reduce, reduction=reduction
-        )
-        assert smoothing < 1
-        assert smoothing >= 0
-        self.smoothing = smoothing
-
-    def forward(self, input, target):
-        return super().forward(
-            input, torch.clamp(target, min=self.smoothing, max=(1 - self.smoothing))
-        )
-
 class PrestoMaskedLanguageModel(pl.LightningModule):
     def __init__(self, model):
         super().__init__()
@@ -127,7 +111,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
 
     def configure_loss_function(self):
-        return CELossWithSmoothing()
+        return nn.MSELoss()
 
     def loss_function(self, outputs, labels):
         return self.loss_fn(outputs, labels)
