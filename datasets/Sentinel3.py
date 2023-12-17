@@ -11,7 +11,7 @@ S3_DIV_VALUES = [25.0] * len(S3_BANDS)
 
 class Sentinel3(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
-      super().__init__(dataset_folder , legend_folder, len(S3_BANDS))
+      super().__init__(dataset_folder , legend_folder, S3_BANDS)
 
     def transform(self, raster_data: np.array, final_w: int = FINAL_W, final_h: int = FINAL_H) -> np.array:
       new_raster_data = []
@@ -56,3 +56,7 @@ class Sentinel3(ADSP_Dataset):
             if d == date:
                 self.files_temporal_aligned.append(self.files[f_idx])
                 f_idx += 1
+                
+    def get_mean_per_bands(self):
+      all_mean_per_bands = self.__get_all_mean_per_bands()
+      return all_mean_per_bands[:-1]

@@ -3,7 +3,6 @@ from functools import reduce
 from collections import OrderedDict
 from typing import OrderedDict as OrderedDictType
 from typing import List
-from tqdm import tqdm
 
 from .Dem import DEM_BANDS, DEM_SHIFT_VALUES, DEM_DIV_VALUES
 from .LandCover import LC_BANDS, LC_SHIFT_VALUES, LC_DIV_VALUES
@@ -55,30 +54,28 @@ class CollectionDataset():
   def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):
     # read paths of batch files and metadata
     self.era = era
-    self.era_mean_per_bands = self.__get_mean_per_bands(self.era)
     self.dem = dem
-    self.dem_mean_per_bands = self.__get_mean_per_bands(self.dem)
     self.sentinel3 = sentinel3
-    self.sentinel3_mean_per_bands = self.__get_mean_per_bands(self.sentinel3)
     self.sentinel5 = sentinel5
-    self.sentinel5_mean_per_bands = self.__get_mean_per_bands(self.sentinel5)
     self.land_cover = land_cover
-    self.land_cover_mean_per_bands = self.__get_mean_per_bands(self.land_cover)
 
-    self.mean_all_bands_dataset = []
-    self.mean_all_bands_dataset.extend(self.sentinel3_mean_per_bands[:-1])
-    self.mean_all_bands_dataset.extend(self.sentinel5_mean_per_bands[::2])
-    self.mean_all_bands_dataset.extend(self.era_mean_per_bands)
-    self.mean_all_bands_dataset.extend([self.dem_mean_per_bands[0]])
-    self.mean_all_bands_dataset.extend(self.land_cover_mean_per_bands)
+    self.mean_bands = self.__generate_mean()
 
     self.len_retained_dates = None
+    self.aligned_dates = None
     self.__temporal_alignment()
-
-  def __len__(self):
-    if self.len_retained_dates is not None:
-      return self.len_retained_dates
-    return None
+    
+  def __generate_mean(self):
+    datasets = [ self.era , self.dem, self.sentinel3, self.sentinel5, self.land_cover]
+    mean_bands = np.ndarray( len(BANDS) )
+    
+    for dataset in datasets:
+      means = dataset.get_mean_per_bands()
+      for i , band in enumerate( dataset.get_bands() ):
+        band_idx = BANDS.index(band)
+        mean_bands[ band_idx ] = means[i]
+        
+    return mean_bands
 
   def __temporal_alignment(self):
     # retrieve dates from path
@@ -96,26 +93,18 @@ class CollectionDataset():
     # self.era.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
     # self.sentinel3.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
     # self.sentinel5.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
+    
+    self.len_retained_dates = len(dates_least_one_datasets)
+    self.aligned_dates = dates_least_one_datasets
 
-    era_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, era5_dates))
-    sentinel3_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, s3_dates))
-    sentinel5_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, s5_dates))
-    self.len_retained_dates = len(era_tot_dates_all)
-
-    self.era.add_dates_from_files(era_tot_dates_all)
-    self.sentinel3.add_dates_from_files(sentinel3_tot_dates_all)
-    self.sentinel5.add_dates_from_files(sentinel5_tot_dates_all)
-
-  def __get_mean_per_bands(self, dataset):
-      shape = dataset[0].shape
-      sum_values_per_bands = np.zeros((shape[0]))
-      n_values = np.zeros((shape[0]))
-      for i in tqdm(range(len(dataset.files))):
-        raster = dataset[i]
-        for j in range(raster.shape[0]):
-          sum_values_per_bands[j] += np.nansum(raster[j])
-          n_values[j] += np.sum(~np.isnan(raster[j]))
-      return sum_values_per_bands / n_values
+    self.era.add_dates_from_files(dates_least_one_datasets)
+    self.sentinel3.add_dates_from_files(dates_least_one_datasets)
+    self.sentinel5.add_dates_from_files(dates_least_one_datasets)
+    
+  def __len__(self):
+    if self.len_retained_dates is not None:
+      return self.len_retained_dates
+    return None
 
   def __getitem__(self, index):
     # dynamic
@@ -125,8 +114,11 @@ class CollectionDataset():
     # static
     lc = self.land_cover[0]
     dem = self.dem[0]
-    if index not in self.sentinel3.index_temporal_aligned:
-      date = self.sentinel3.files_temporal_aligned[index].split('/')[4].split('T')[0]
-    else:
-      date = self.sentinel3.files_temporal_aligned[index]
+    date = self.aligned_dates[index]
+    
+    #if index not in self.sentinel3.index_temporal_aligned:
+    #  date = self.sentinel3.files_temporal_aligned[index].split('/')[4].split('T')[0]
+    #else:
+    #  date = self.sentinel3.files_temporal_aligned[index]
+    
     return era, lc, s3, s5, dem, date

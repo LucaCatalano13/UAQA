@@ -46,7 +46,7 @@ LC_DIV_VALUES = [2000.0]
 
 class LandCover(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str, old_new_classes_dict = LC_MAP_DICT_CLASSES):
-      super().__init__(dataset_folder, legend_folder, len(LC_BANDS))
+      super().__init__(dataset_folder, legend_folder, LC_BANDS)
       self.original_taxonomy = json.load(open(self.labels_legends[0]))
       self.old_new_classes_dict = old_new_classes_dict
 
@@ -81,3 +81,6 @@ class LandCover(ADSP_Dataset):
         print("Min: ", band.min())
         print("Max: ", band.max())
         show((raster, i+1))
+        
+    def get_mean_per_bands(self):
+      return self.__get_all_mean_per_bands()

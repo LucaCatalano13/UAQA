@@ -10,11 +10,11 @@ class ADSP_Dataset (Dataset):
     """
     Main Class for commmon procedures
     """
-    def __init__(self, dataset_folder: str, legend_folder: str, n_bands: int):
+    def __init__(self, dataset_folder: str, legend_folder: str, bands: list):
         super().__init__()
         # read paths of files
         self.files = sorted(glob(f"{dataset_folder}/*.tiff", recursive = True))
-        self.n_bands = n_bands
+        self.bands = bands
         # paths of files temporal aligned
         self.files_temporal_aligned = None
         # read paths of legend linked with file
@@ -24,7 +24,7 @@ class ADSP_Dataset (Dataset):
         # save the original shape of the raster of the dataset
         self.original_raster_shape = rasterio.open(self.files[0]).shape
         # save the resized shape of the raster of the dataset
-        self.shape_resized_raster = (self.n_bands, FINAL_H, FINAL_W)
+        self.shape_resized_raster = (len(self.bands), FINAL_H, FINAL_W)
     
     def __len__(self) -> int:
         # the len of the dataset equals to the number of the files it contains
@@ -33,14 +33,8 @@ class ADSP_Dataset (Dataset):
     def transform(self, raster_data):
         return raster_data
     
-    #TODO: implement in each class
-    def generate_false_data( self, missing_date ):
-        #take missing_date and put in a list self.missing_dates
-        #In the get_item you take file and look if not in missing_dates
-        #   open file
-        #else
-        #   generate false data
-        pass
+    def get_bands(self):
+        return self.bands
     
     # def get_item_temporal_aligned(self, index):
     #     assert self.files_temporal_aligned is not None
@@ -121,4 +115,17 @@ class ADSP_Dataset (Dataset):
         pixel_width_meters = pixel_width_degrees * lat_conversion_factor * 1000
         pixel_height_meters = pixel_height_degrees * lat_conversion_factor * 1000
         return pixel_width_meters, pixel_height_meters
+
+    def __get_all_mean_per_bands(self):
+        dataset_bands = self.shape_resized_raster[0]
+        sum_values_per_bands = np.zeros(dataset_bands)
+        n_values = np.zeros(dataset_bands)
+        #for all days available
+        for day_index in range(len(self.files)):
+            raster = self[day_index]
+            #for all bands in dataset
+            for band in range(dataset_bands):
+                sum_values_per_bands[band] += np.nansum(raster[band])
+                n_values[band] += np.sum(~np.isnan(raster[band]))
+        return sum_values_per_bands / n_values
 
