@@ -15,8 +15,10 @@ class ADSP_Dataset (Dataset):
         # read paths of files
         self.files = sorted(glob(f"{dataset_folder}/*.tiff", recursive = True))
         self.bands = bands
-        # paths of files temporal aligned
+        # paths of files temporal aligned: some path and some dates (longer or equal to files)
         self.files_temporal_aligned = None
+        # list of index on files_temporal_aligned that have no real data
+        self.index_temporal_aligned = None
         # read paths of legend linked with file
         self.labels_legends =  sorted(glob(f"{legend_folder}/*.json", recursive = True))
         # save the resoluton per pixel of the raster data
@@ -50,8 +52,10 @@ class ADSP_Dataset (Dataset):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[index]
+        #if original dataset has no data for that index
         if index in self.index_temporal_aligned:
             return np.full(self.shape_resized_raster, np.nan)
+        #otherwise open the real data
         #TODO with statemant --> perform
         raster = rasterio.open(file)
         # transform the raster into a numpy array

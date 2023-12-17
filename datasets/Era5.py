@@ -30,7 +30,6 @@ ERA5_SHIFT_VALUES = [-272.15] * len(ERA5_BANDS)
 ERA5_DIV_VALUES = [35.0] * len(ERA5_BANDS)
 
 class Era5(ADSP_Dataset):
-    #TODO: ci sono valori nan nella band, come li risolvo?
     def __init__(self, dataset_folder: str, legend_folder: str):
       super().__init__(dataset_folder , legend_folder, ERA5_BANDS)
 
@@ -40,9 +39,6 @@ class Era5(ADSP_Dataset):
         if band.min() == band.max() or ( np.isnan(band.min() ) and np.isnan(band.max())):
           new_raster_band = cv2.resize(band, (final_w, final_h), interpolation=cv2.INTER_LINEAR)
           new_raster_data.append(new_raster_band)
-        #else:
-          #TODO: se diversi i valori, come interpolo? --> non è questo il nostro caso
-          #continue
       return np.array(new_raster_data)
 
     def add_dates_from_files(self, tot_dates_all):
@@ -55,7 +51,7 @@ class Era5(ADSP_Dataset):
               self.index_temporal_aligned.append(i)
               self.files_temporal_aligned.append(d)
           if d == date:
-              self.files_temporal_aligned.append(self.files[i])
+              self.files_temporal_aligned.append(self.files[f_idx])
               f_idx += 1
 
     def show_raster(self, index):
