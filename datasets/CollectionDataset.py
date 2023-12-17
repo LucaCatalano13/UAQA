@@ -51,55 +51,62 @@ BANDS_GROUPS_IDX: OrderedDictType[str, List[int]] = OrderedDict(
 
 BAND_EXPANSION = [len(x) for x in BANDS_GROUPS_IDX.values()]
 
-
 class CollectionDataset():
-    def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):
-      self.era = era
-      self.era_mean_per_bands = self.__get_mean_per_bands(self.era)
-      self.dem = dem
-      self.dem_mean_per_bands = self.__get_mean_per_bands(self.dem)
-      self.sentinel3 = sentinel3
-      self.sentinel3_mean_per_bands = self.__get_mean_per_bands(self.sentinel3)
-      self.sentinel5 = sentinel5
-      self.sentinel5_mean_per_bands = self.__get_mean_per_bands(self.sentinel5)
-      self.land_cover = land_cover
-      self.land_cover_mean_per_bands = self.__get_mean_per_bands(self.land_cover)
+  def __init__(self, era = None, land_cover = None, sentinel3 = None, sentinel5 = None, dem = None):
+    # read paths of batch files and metadata
+    self.era = era
+    self.era_mean_per_bands = self.__get_mean_per_bands(self.era)
+    self.dem = dem
+    self.dem_mean_per_bands = self.__get_mean_per_bands(self.dem)
+    self.sentinel3 = sentinel3
+    self.sentinel3_mean_per_bands = self.__get_mean_per_bands(self.sentinel3)
+    self.sentinel5 = sentinel5
+    self.sentinel5_mean_per_bands = self.__get_mean_per_bands(self.sentinel5)
+    self.land_cover = land_cover
+    self.land_cover_mean_per_bands = self.__get_mean_per_bands(self.land_cover)
 
-      self.mean_all_bands_dataset = []
-      self.mean_all_bands_dataset.extend(self.sentinel3_mean_per_bands[:-1])
-      self.mean_all_bands_dataset.extend(self.sentinel5_mean_per_bands[::2])
-      self.mean_all_bands_dataset.extend(self.era_mean_per_bands)
-      self.mean_all_bands_dataset.extend([self.dem_mean_per_bands[0]])
-      self.mean_all_bands_dataset.extend(self.land_cover_mean_per_bands)
-      
-      self.len_retained_dates = None
-      self.__temporal_alignment()
+    self.mean_all_bands_dataset = []
+    self.mean_all_bands_dataset.extend(self.sentinel3_mean_per_bands[:-1])
+    self.mean_all_bands_dataset.extend(self.sentinel5_mean_per_bands[::2])
+    self.mean_all_bands_dataset.extend(self.era_mean_per_bands)
+    self.mean_all_bands_dataset.extend([self.dem_mean_per_bands[0]])
+    self.mean_all_bands_dataset.extend(self.land_cover_mean_per_bands)
 
-    def __len__(self):
-      if self.len_retained_dates is not None:
-        return self.len_retained_dates
-      return None
+    self.len_retained_dates = None
+    self.__temporal_alignment()
 
-    #TODO: here we remove the dates
-    #TODO: we have to generate fictisius data in those dates all at nan with correct format and mask all TRUE
-    def __temporal_alignment(self):
-      # retrieve dates from path
-      s3_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel3.files])
-      s5_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel5.files])
-      era5_dates = np.unique([f.split('/')[4].split('.')[0] for f in self.era.files])
-      # find dates that appear in all datasets considered
-      dates_all_datasets = reduce(np.intersect1d, (s3_dates, s5_dates, era5_dates))
-      # find dates that appear at least in one dataset considered (it is a superset of dates_all_datasets)
-      dates_least_one_datasets = np.unique(reduce(np.union1d, (s3_dates, s5_dates, era5_dates)))
-      # we remove dates that are not in all datasets
-      tot_dates_to_remove = np.unique(np.setdiff1d(dates_least_one_datasets, dates_all_datasets))
-      self.len_retained_dates = len(dates_all_datasets)
-      # remove operations in dynamic datasets
-      self.era.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
-      self.sentinel3.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
-      self.sentinel5.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
+  def __len__(self):
+    if self.len_retained_dates is not None:
+      return self.len_retained_dates
+    return None
 
-    def __get_mean_per_bands(self, dataset):
+  def __temporal_alignment(self):
+    # retrieve dates from path
+    s3_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel3.files])
+    s5_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel5.files])
+    era5_dates = np.unique([f.split('/')[4].split('.')[0] for f in self.era.files])
+    # find dates that appear in all datasets considered
+    # dates_all_datasets = reduce(np.intersect1d, (s3_dates, s5_dates, era5_dates))
+    # find dates that appear at least in one dataset considered (it is a superset of dates_all_datasets)
+    dates_least_one_datasets = np.unique(reduce(np.union1d, (s3_dates, s5_dates, era5_dates)))
+    # we remove dates that are not in all datasets
+    # tot_dates_to_remove = np.unique(np.setdiff1d(dates_least_one_datasets, dates_all_datasets))
+    # self.len_retained_dates = len(dates_all_datasets)
+    # remove operations in dynamic datasets
+    # self.era.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
+    # self.sentinel3.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
+    # self.sentinel5.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
+
+    era_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, era5_dates))
+    sentinel3_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, s3_dates))
+    sentinel5_tot_dates_all = np.unique(np.union1d(dates_least_one_datasets, s5_dates))
+    self.len_retained_dates = len(era_tot_dates_all)
+
+    self.era.add_dates_from_files(era_tot_dates_all)
+    self.sentinel3.add_dates_from_files(sentinel3_tot_dates_all)
+    self.sentinel5.add_dates_from_files(sentinel5_tot_dates_all)
+
+  def __get_mean_per_bands(self, dataset):
       shape = dataset[0].shape
       sum_values_per_bands = np.zeros((shape[0]))
       n_values = np.zeros((shape[0]))
@@ -110,12 +117,16 @@ class CollectionDataset():
           n_values[j] += np.sum(~np.isnan(raster[j]))
       return sum_values_per_bands / n_values
 
-    def __getitem__(self, index):
-      # dynamic
-      era = self.era.get_item_temporal_aligned(index)
-      s3 = self.sentinel3.get_item_temporal_aligned(index)
-      s5 = self.sentinel5.get_item_temporal_aligned(index)
-      # static
-      lc = self.land_cover[0]
-      dem = self.dem[0]
-      return era, lc, s3, s5, dem
+  def __getitem__(self, index):
+    # dynamic
+    era = self.era.get_item_temporal_aligned(index)
+    s3 = self.sentinel3.get_item_temporal_aligned(index)
+    s5 = self.sentinel5.get_item_temporal_aligned(index)
+    # static
+    lc = self.land_cover[0]
+    dem = self.dem[0]
+    if index not in self.sentinel3.index_temporal_aligned:
+      date = self.sentinel3.files_temporal_aligned[index].split('/')[4].split('T')[0]
+    else:
+      date = self.sentinel3.files_temporal_aligned[index]
+    return era, lc, s3, s5, dem, date
