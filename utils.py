@@ -31,8 +31,7 @@ def construct_single_presto_input(
     s3_bands: Optional[List[str]] = None,
     s5: Optional[torch.Tensor] = None,
     s5_bands: Optional[List[str]] = None,
-    normalize: bool = False,
-):
+    normalize: bool = False):
 
     '''
     Constructin single presto input
