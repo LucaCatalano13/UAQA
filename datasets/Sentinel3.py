@@ -34,3 +34,25 @@ class Sentinel3(ADSP_Dataset):
           if string_date not in dictionary_date_signle_file:
             dictionary_date_signle_file[string_date] = str(f)
       self.files_temporal_aligned = sorted(list(dictionary_date_signle_file.values()))
+      
+    def add_dates_from_files(self, tot_dates_all):
+      self.files_temporal_aligned = []
+      self.index_temporal_aligned = []
+      f_idx = 0
+      for i, d in enumerate(tot_dates_all):
+          date = self.files[f_idx].split('/')[4].split('T')[0]
+          date_plus_one = self.files[f_idx + 1].split('/')[4].split('T')[0]
+          if date == date_plus_one:
+            if d < date:
+                self.index_temporal_aligned.append(i)
+                self.files_temporal_aligned.append(d)
+            if d == date:
+                self.files_temporal_aligned.append(self.files[f_idx])
+                f_idx += 2
+          else:
+            if d < date:
+                self.index_temporal_aligned.append(i)
+                self.files_temporal_aligned.append(d)
+            if d == date:
+                self.files_temporal_aligned.append(self.files[f_idx])
+                f_idx += 1

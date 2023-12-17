@@ -35,3 +35,36 @@ class Sentinel5(ADSP_Dataset):
         new_raster_band = resize_array(band, (final_h, final_w))
         new_raster_data.append(new_raster_band)
       return np.array(new_raster_data)
+    
+    def add_dates_from_files(self, tot_dates_all):
+      self.files_temporal_aligned = []
+      self.index_temporal_aligned = []
+      f_idx = 0
+      for i, d in enumerate(tot_dates_all):
+          date = self.files[f_idx].split('/')[4].split('T')[0]
+          if f_idx < len(self.files)-1:
+            date_plus_one = self.files[f_idx + 1].split('/')[4].split('T')[0]
+          if f_idx < len(self.files)-2:
+            date_plus_two = self.files[f_idx + 2].split('/')[4].split('T')[0]
+          if date == date_plus_one:
+            if date_plus_one == date_plus_two:
+              if d < date:
+                self.index_temporal_aligned.append(i)
+                self.files_temporal_aligned.append(d)
+              if d == date:
+                  self.files_temporal_aligned.append(self.files[f_idx])
+                  f_idx += 3
+            else:
+              if d < date:
+                  self.index_temporal_aligned.append(i)
+                  self.files_temporal_aligned.append(d)
+              if d == date:
+                  self.files_temporal_aligned.append(self.files[f_idx])
+                  f_idx += 2
+          else:
+            if d < date:
+                self.index_temporal_aligned.append(i)
+                self.files_temporal_aligned.append(d)
+            if d == date:
+                self.files_temporal_aligned.append(self.files[f_idx])
+                f_idx += 1

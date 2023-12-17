@@ -146,7 +146,7 @@ def process_images(collection_dataset, bounds, amount_of_data = None):
         
         # Generate the coordinates of each pixel 
         latlons[i, :, :] = get_city_grids(bounds)
-        
+
     # fill the nan value with the mean of the band evaluated in all the dataset    
     nan_indices = np.argwhere(np.isnan(arrays))
     for idx in tqdm(nan_indices):

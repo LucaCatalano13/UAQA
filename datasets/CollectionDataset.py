@@ -100,14 +100,15 @@ class CollectionDataset():
       self.sentinel5.remove_dates_from_files(tot_dates_to_remove, self.len_retained_dates)
 
     def __get_mean_per_bands(self, dataset):
-        shape = dataset[0].shape
-        sum_values_per_bands = np.zeros((shape[0]))
-        n_values = len(dataset.files) * shape[1] * shape[2]
-        for i in tqdm(range(len(dataset.files))):
-          raster = dataset[i]
-          for j in range(raster.shape[0]):
-            sum_values_per_bands[j] += np.nansum(raster[j])
-        return sum_values_per_bands / n_values
+      shape = dataset[0].shape
+      sum_values_per_bands = np.zeros((shape[0]))
+      n_values = np.zeros((shape[0]))
+      for i in tqdm(range(len(dataset.files))):
+        raster = dataset[i]
+        for j in range(raster.shape[0]):
+          sum_values_per_bands[j] += np.nansum(raster[j])
+          n_values[j] += np.sum(~np.isnan(raster[j]))
+      return sum_values_per_bands / n_values
 
     def __getitem__(self, index):
       # dynamic

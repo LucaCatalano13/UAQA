@@ -9,10 +9,11 @@ class ADSP_Dataset (Dataset):
     """
     Main Class for commmon procedures
     """
-    def __init__(self, dataset_folder: str, legend_folder: str):
+    def __init__(self, dataset_folder: str, legend_folder: str, old_new_classes_dict = None):
         super().__init__()
         # read paths of files
         self.files = sorted(glob(f"{dataset_folder}/*.tiff", recursive = True))
+        self.old_new_classes_dict = old_new_classes_dict
         # paths of files temporal aligned
         self.files_temporal_aligned = None
         # read paths of legend linked with file
@@ -21,7 +22,9 @@ class ADSP_Dataset (Dataset):
         self.resolution = rasterio.open(self.files[0]).res
         # save the original shape of the raster of the dataset
         self.original_raster_shape = rasterio.open(self.files[0]).shape
-
+        # save the resized shape of the raster of the dataset
+        self.shape_resized_raster = self[0].shape
+    
     def __len__(self) -> int:
         # the len of the dataset equals to the number of the files it contains
         return len(self.files)
@@ -38,10 +41,22 @@ class ADSP_Dataset (Dataset):
         #   generate false data
         pass
     
+    # def get_item_temporal_aligned(self, index):
+    #     assert self.files_temporal_aligned is not None
+    #     # retrieve and open the .tiff file
+    #     file = self.files_temporal_aligned[index]
+    #     #TODO with statemant --> perform
+    #     raster = rasterio.open(file)
+    #     # transform the raster into a numpy array
+    #     raster_data = raster.read()
+    #     return self.transform(raster_data)
+
     def get_item_temporal_aligned(self, index):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[index]
+        if index in self.index_temporal_aligned:
+            return np.full(self.shape_resized_raster, np.nan)
         #TODO with statemant --> perform
         raster = rasterio.open(file)
         # transform the raster into a numpy array
