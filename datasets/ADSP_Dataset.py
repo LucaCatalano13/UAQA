@@ -4,7 +4,7 @@ import json
 from torch.utils.data import Dataset
 import numpy as np
 from glob import glob
-from datasets.utils import FINAL_H, FINAL_W
+from dataset_utils import FINAL_H, FINAL_W
 
 class ADSP_Dataset (Dataset):
     """
