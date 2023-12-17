@@ -6,7 +6,10 @@ def parse_arguments():
     # Training parameters
     parser.add_argument("--batch_size", type=int, default=128,
                         help="batch size")
-     
+    
+    parser.add_argument("--num_timesteps", type=int, default=7,
+                        help="number of days for each training slice of pixel timeseries")
+    
     parser.add_argument("--mask_ratio", type=float, default=0.2,
                         help="mask ratio for soft mask")
     
