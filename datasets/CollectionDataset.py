@@ -84,9 +84,9 @@ class CollectionDataset():
     #TODO: we have to generate fictisius data in those dates all at nan with correct format and mask all TRUE
     def __temporal_alignment(self):
       # retrieve dates from path
-      s3_dates = np.unique([f.split('/')[2].split('T')[0] for f in self.sentinel3.files])
-      s5_dates = np.unique([f.split('/')[2].split('T')[0] for f in self.sentinel5.files])
-      era5_dates = np.unique([f.split('/')[2].split('.')[0] for f in self.era.files])
+      s3_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel3.files])
+      s5_dates = np.unique([f.split('/')[4].split('T')[0] for f in self.sentinel5.files])
+      era5_dates = np.unique([f.split('/')[4].split('.')[0] for f in self.era.files])
       # find dates that appear in all datasets considered
       dates_all_datasets = reduce(np.intersect1d, (s3_dates, s5_dates, era5_dates))
       # find dates that appear at least in one dataset considered (it is a superset of dates_all_datasets)
@@ -119,4 +119,3 @@ class CollectionDataset():
       lc = self.land_cover[0]
       dem = self.dem[0]
       return era, lc, s3, s5, dem
-
