@@ -79,7 +79,7 @@ if __name__ == "__main__":
         encoder = Encoder()
         decoder = Decoder(encoder.channel_embed)
         presto = Presto(encoder, decoder)
-        presto_ml = PrestoMaskedLanguageModel(model = presto)
+        presto_ml = PrestoMaskedLanguageModel(model = presto, mask_ratio=args.mask_ratio)
     
 
     checkpoint_cb = ModelCheckpoint(

@@ -116,13 +116,14 @@ class CELossWithSmoothing(nn.CrossEntropyLoss):
         )
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
-    def __init__(self, model):
+    def __init__(self, model, mask_ratio):
         super().__init__()
         self.lr = 0.001
         self.model = model
         self.loss_fn = self.configure_loss_function()
         self.optimizer = self.configure_optimizers()
-
+        self.mask_ratio = mask_ratio
+        
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
 
@@ -140,7 +141,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         # define soft mask
-        soft_mask = make_mask(x=x, hard_mask=hard_mask, strategy= MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)],mask_ratio=.2)
+        soft_mask = make_mask(x=x, hard_mask=hard_mask, strategy= MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)], mask_ratio=mask_ratio)
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
         # mask x
