@@ -452,12 +452,16 @@ class Encoder(nn.Module):
         print("X nan: ", x.isnan().sum())   
         # TODO: separate timesteps and channels? --> probably origin of 1 in dimensions
         x = torch.cat(all_tokens, dim=1)
+        print("X nan: ", x.isnan().sum())   
         mask = torch.cat(all_masks, dim=1)
+        print("X nan: ", x.isnan().sum())   
         x = self.mask_tokens(x, mask)
+        print("X nan: ", x.isnan().sum())   
         # latlons (BS, timesteps, 2)
         # latlons_cartesian (BS, timesteps, 3)
         # latlons_token (BS, 1, 128)
         latlon_tokens = self.latlon_embed(self.cartesian(latlons)[:, 0, :]).unsqueeze(1)
+        print("X nan: ", x.isnan().sum())   
         # append lat_lon token to the embedding
         # x (BS, len(band_idx)*timesteps, 128) --> (BS, (len(band_idx)*timesteps)+1, 128)
         # lend(band_ix) == n_channel_groups (in our case == n_datasets becouse we do not create subgroup of datasets)
