@@ -121,7 +121,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio_random: float, mask_ratio_
     return mask
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
-    def __init__(self, model, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM):
+    def __init__(self, model, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM, normalized = False):
         super().__init__()
         self.lr = 0.001
         self.model = model
@@ -131,6 +131,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         self.mask_ratio_bands = mask_ratio_bands
         self.mask_ratio_timesteps = mask_ratio_timesteps
         self.bands_not_to_mask = bands_not_to_mask
+        self.normalized = normalized
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
@@ -142,6 +143,12 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         return self.loss_fn(outputs, labels)
     
     def forward(self, x, latlons, soft_hard_mask = None, day_of_year = 0, day_of_week = 0):
+        if self.normalized:
+            # Normalized values        
+            mean_values = x.mean(dim=(0, 1), keepdim=True)
+            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
+            x = (x - mean_values) / (std_values + 1e-05)
+        
         x = self.model(x = x, mask = soft_hard_mask, latlons = latlons, 
                         day_of_year = day_of_year, day_of_week = day_of_week)
         return x
@@ -155,12 +162,12 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
         # mask x
-        soft_hard_mask = torch.logical_or(soft_mask.cpu().bool(), hard_mask.cpu().bool())
+        # soft_hard_mask = torch.logical_or(soft_mask.cpu().bool(), hard_mask.cpu().bool())
         # label = masked_x
         labels = torch.Tensor(x[soft_mask])
         print("Labels nan: ", labels.isnan().sum())
         # forward
-        reconstructed_x = self(x, latlons, soft_hard_mask, day_of_year, day_of_week)
+        reconstructed_x = self(x, latlons, soft_mask_separated, day_of_year, day_of_week)
         # compute loss between reconstructed_masked_x (of the masked positions) and masked_x (label)
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
