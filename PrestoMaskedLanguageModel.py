@@ -169,7 +169,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # compute loss between reconstructed_masked_x (of the masked positions) and masked_x (label)
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
-        self.log('loss', loss.item(), logger=True)
+        self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
 
     def inference_step(self, batch):
