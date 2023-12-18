@@ -169,6 +169,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # compute loss between reconstructed_masked_x (of the masked positions) and masked_x (label)
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
+        print(loss)
         self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
 
@@ -189,13 +190,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         return self.inference_step(batch)
     
-    def on_train_epoch_end(self, outputs) -> None:
-        gathered = self.all_gather(outputs)
-        if self.global_rank == 0:
-            # print(gathered)
-            loss = sum(output['loss'].mean() for output in gathered) / len(outputs)
-            print(loss.item())
-
     def inference_epoch_end(self, outputs, inference_batch):
         x, hard_mask, latlons, day_of_year, day_of_week = inference_batch
         if self.normalized:
