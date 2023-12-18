@@ -80,7 +80,7 @@ if __name__ == "__main__":
         encoder = Encoder()
         decoder = Decoder(encoder.channel_embed)
         presto = Presto(encoder, decoder)
-        presto_ml = PrestoMaskedLanguageModel(model = presto, mask_ratio_ramdom=args.mask_ratio_random, 
+        presto_ml = PrestoMaskedLanguageModel(model = presto, mask_ratio_random=args.mask_ratio_random, 
                                               mask_ratio_bands=args.mask_ratio_bands, mask_ratio_timesteps=args.mask_ratio_timesteps)
     
 
