@@ -10,7 +10,7 @@ DEM_DIV_VALUES = [2000.0]
 
 class Dem(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
-      super().__init__(dataset_folder , legend_folder, len(DEM_BANDS))
+      super().__init__(dataset_folder , legend_folder, DEM_BANDS)
 
     def transform(self, raster_data: np.array, final_w: int = FINAL_W, final_h: int = FINAL_H) -> np.array:
       new_raster_data = []
@@ -18,3 +18,8 @@ class Dem(ADSP_Dataset):
         new_raster_band = resize_array(band, (final_h, final_w))
         new_raster_data.append(new_raster_band)
       return np.array(new_raster_data)
+    
+    def get_mean_per_bands(self):
+      all_mean_per_bands = self.__get_all_mean_per_bands()
+      return [all_mean_per_bands[0]]
+

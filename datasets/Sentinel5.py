@@ -21,7 +21,7 @@ S5_DIV_VALUES = [float(1e4)] * len(S5_BANDS)
 
 class Sentinel5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
-      super().__init__(dataset_folder , legend_folder, len(S5_BANDS))
+      super().__init__(dataset_folder , legend_folder, S5_BANDS)
 
     def __getitem__(self, index: int) -> np.array:
       file = self.files[index]
@@ -35,3 +35,6 @@ class Sentinel5(ADSP_Dataset):
         new_raster_band = resize_array(band, (final_h, final_w))
         new_raster_data.append(new_raster_band)
       return np.array(new_raster_data)
+    def get_mean_per_bands(self):
+      all_mean_per_bands = self.__get_all_mean_per_bands()
+      return all_mean_per_bands[::2]

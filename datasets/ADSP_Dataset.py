@@ -10,13 +10,15 @@ class ADSP_Dataset (Dataset):
     """
     Main Class for commmon procedures
     """
-    def __init__(self, dataset_folder: str, legend_folder: str, n_bands: int):
+    def __init__(self, dataset_folder: str, legend_folder: str, bands: list):
         super().__init__()
         # read paths of files
         self.files = sorted(glob(f"{dataset_folder}/*.tiff", recursive = True))
-        self.n_bands = n_bands
-        # paths of files temporal aligned
+        self.bands = bands
+        # paths of files temporal aligned: some path and some dates (longer or equal to files)
         self.files_temporal_aligned = None
+        # list of index on files_temporal_aligned that have no real data
+        self.index_temporal_aligned = None
         # read paths of legend linked with file
         self.labels_legends =  sorted(glob(f"{legend_folder}/*.json", recursive = True))
         # save the resoluton per pixel of the raster data
@@ -24,7 +26,7 @@ class ADSP_Dataset (Dataset):
         # save the original shape of the raster of the dataset
         self.original_raster_shape = rasterio.open(self.files[0]).shape
         # save the resized shape of the raster of the dataset
-        self.shape_resized_raster = (self.n_bands, FINAL_H, FINAL_W)
+        self.shape_resized_raster = (len(self.bands), FINAL_H, FINAL_W)
     
     def __len__(self) -> int:
         # the len of the dataset equals to the number of the files it contains
@@ -33,14 +35,8 @@ class ADSP_Dataset (Dataset):
     def transform(self, raster_data):
         return raster_data
     
-    #TODO: implement in each class
-    def generate_false_data( self, missing_date ):
-        #take missing_date and put in a list self.missing_dates
-        #In the get_item you take file and look if not in missing_dates
-        #   open file
-        #else
-        #   generate false data
-        pass
+    def get_bands(self):
+        return self.bands
     
     # def get_item_temporal_aligned(self, index):
     #     assert self.files_temporal_aligned is not None
@@ -56,8 +52,10 @@ class ADSP_Dataset (Dataset):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[index]
+        #if original dataset has no data for that index
         if index in self.index_temporal_aligned:
             return np.full(self.shape_resized_raster, np.nan)
+        #otherwise open the real data
         #TODO with statemant --> perform
         raster = rasterio.open(file)
         # transform the raster into a numpy array
@@ -122,6 +120,19 @@ class ADSP_Dataset (Dataset):
         pixel_height_meters = pixel_height_degrees * lat_conversion_factor * 1000
         return pixel_width_meters, pixel_height_meters
 
+    def __get_all_mean_per_bands(self):
+        dataset_bands = self.shape_resized_raster[0]
+        sum_values_per_bands = np.zeros(dataset_bands)
+        n_values = np.zeros(dataset_bands)
+        #for all days available
+        for day_index in range(len(self.files)):
+            raster = self[day_index]
+            #for all bands in dataset
+            for band in range(dataset_bands):
+                sum_values_per_bands[band] += np.nansum(raster[band])
+                n_values[band] += np.sum(~np.isnan(raster[band]))
+        return sum_values_per_bands / n_values
+    
     def add_dates_from_files(self, tot_dates_all):
       self.files_temporal_aligned = []
       self.index_temporal_aligned = []

@@ -14,6 +14,8 @@ import parser
 from presto.presto import Encoder, Decoder, Presto
 from PixelTimeseries import PixelTimeSeries
 
+
+#TODO: not to use, we have to change all
 if __name__ == "__main__":
     args = parser.parse_arguments()
     
