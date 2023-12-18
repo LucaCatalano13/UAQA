@@ -122,3 +122,20 @@ class ADSP_Dataset (Dataset):
         pixel_height_meters = pixel_height_degrees * lat_conversion_factor * 1000
         return pixel_width_meters, pixel_height_meters
 
+    def add_dates_from_files(self, tot_dates_all):
+      self.files_temporal_aligned = []
+      self.index_temporal_aligned = []
+      end = False
+      f_idx = 0
+      for i, d in enumerate(tot_dates_all):
+          if f_idx < len(self.files):
+            date = self.files[f_idx].split('/')[4].split('T')[0]
+          else:
+            end = True
+          if d < date or end:
+            self.index_temporal_aligned.append(i)
+            self.files_temporal_aligned.append(d)
+          if d == date:
+            self.files_temporal_aligned.append(self.files[f_idx])
+            while f_idx < len(self.files) and date == self.files[f_idx].split('/')[4].split('T')[0]:
+              f_idx += 1

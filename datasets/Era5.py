@@ -45,19 +45,6 @@ class Era5(ADSP_Dataset):
           #continue
       return np.array(new_raster_data)
 
-    def add_dates_from_files(self, tot_dates_all):
-      self.files_temporal_aligned = []
-      self.index_temporal_aligned = []
-      f_idx = 0
-      for i, d in enumerate(tot_dates_all):
-          date = self.files[f_idx].split('/')[4].split('.')[0]
-          if d < date:
-              self.index_temporal_aligned.append(i)
-              self.files_temporal_aligned.append(d)
-          if d == date:
-              self.files_temporal_aligned.append(self.files[i])
-              f_idx += 1
-
     def show_raster(self, index):
       raster = self.get_raster(index)
       array = raster.read()
