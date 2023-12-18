@@ -678,7 +678,6 @@ class Presto(Seq2Seq):
         day_of_year: Union[torch.Tensor, int] = 0,
         day_of_week: Union[torch.Tensor, int] = 0
     ) -> torch.Tensor:
-        print("x nan:" , x.isnan().sum())
         encoded_x = self.encoder(
             x=x,
             latlons=latlons,
