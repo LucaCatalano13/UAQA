@@ -685,9 +685,10 @@ class Presto(Seq2Seq):
         print(x)
         mean_values = x.mean(dim=(0, 1), keepdim=True)
         std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-        x_norm = (x - mean_values) / std_values
+        x_norm = (x - mean_values) / (std_values + 1e-05)
         print(x_norm.shape)
         print(x_norm)
+
         encoded_x = self.encoder(
             x=x_norm,
             latlons=latlons,
