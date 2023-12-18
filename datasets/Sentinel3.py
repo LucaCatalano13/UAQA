@@ -34,6 +34,7 @@ class Sentinel3(ADSP_Dataset):
           if string_date not in dictionary_date_signle_file:
             dictionary_date_signle_file[string_date] = str(f)
       self.files_temporal_aligned = sorted(list(dictionary_date_signle_file.values()))
+    
     def get_mean_per_bands(self):
       all_mean_per_bands = self.__get_all_mean_per_bands()
       return all_mean_per_bands[:-1]
