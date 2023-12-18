@@ -388,11 +388,8 @@ class Encoder(nn.Module):
         batch_size = x.shape[0]
         embedding_dim = x.shape[-1]
         # TODO: mask value = 0?
-        print("Mask tokens: ", x.isnan().sum())
         x[mask.bool()] = 0
-        print("Mask tokens: ", x.isnan().sum())
         x = x.view(batch_size, x.shape[-2], embedding_dim)
-        print("Mask tokens: ", x.isnan().sum())
         return x
 
     def forward(
@@ -420,16 +417,13 @@ class Encoder(nn.Module):
         # we assume the number of masked patches is the same
         # for all items in the batch. Otherwise things become a headache
         all_tokens, all_masks = [], []
-        print("X nan: ", x.isnan().sum())
         # iterate over the different channel groups (name of the dataset) and chanel_idxs (indexes of the bands in BANDS (enum))
         for channel_group, channel_idxs in self.band_groups.items():
             # for each channel group, create a dictionary that has as keys the name of the datasets (channel_group) 
             # and as values a linear combination (FC) from the number of bands in the channel_group
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
-            print("*X tokens: ", x[:,:, channel_idxs].shape)
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
-            print("Tokens: ", tokens.isnan().sum())
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
                 torch.tensor(self.band_group_to_idx[channel_group]).long().to(device)
@@ -454,24 +448,18 @@ class Encoder(nn.Module):
                 d=tokens.shape[-1],
             )
             all_masks.append(group_mask)
-        print("X nan: ", x.isnan().sum())   
         # TODO: separate timesteps and channels? --> probably origin of 1 in dimensions
-        x = torch.cat(all_tokens, dim=1)
-        print("X nan: ", x.isnan().sum())   
+        x = torch.cat(all_tokens, dim=1) 
         mask = torch.cat(all_masks, dim=1)
-        print("X nan: ", x.isnan().sum())   
         x = self.mask_tokens(x, mask)
-        print("X nan: ", x.isnan().sum())   
         # latlons (BS, timesteps, 2)
         # latlons_cartesian (BS, timesteps, 3)
         # latlons_token (BS, 1, 128)
         latlon_tokens = self.latlon_embed(self.cartesian(latlons)[:, 0, :]).unsqueeze(1)
-        print("X nan: ", x.isnan().sum())   
         # append lat_lon token to the embedding
         # x (BS, len(band_idx)*timesteps, 128) --> (BS, (len(band_idx)*timesteps)+1, 128)
         # lend(band_ix) == n_channel_groups (in our case == n_datasets becouse we do not create subgroup of datasets)
         x = torch.cat((latlon_tokens, x), dim=1)
-        print("X nan after mask: ", x.isnan().sum())
         # apply Transformer blocks
         for blk in self.blocks:
             x = blk(x)
@@ -689,9 +677,7 @@ class Presto(Seq2Seq):
             day_of_week=day_of_week,
             eval_task=False,
         )
-        print(encoded_x.isnan().sum())
         reconstructed_x = self.decoder(encoded_x, day_of_week, day_of_year)
-        print(reconstructed_x.isnan().sum())
         return reconstructed_x
 
     @classmethod
