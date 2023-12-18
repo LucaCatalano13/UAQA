@@ -417,6 +417,7 @@ class Encoder(nn.Module):
         # we assume the number of masked patches is the same
         # for all items in the batch. Otherwise things become a headache
         all_tokens, all_masks = [], []
+        print("X nan: ", x.isnan().sum())
         # iterate over the different channel groups (name of the dataset) and chanel_idxs (indexes of the bands in BANDS (enum))
         for channel_group, channel_idxs in self.band_groups.items():
             # for each channel group, create a dictionary that has as keys the name of the datasets (channel_group) 
@@ -448,7 +449,7 @@ class Encoder(nn.Module):
                 d=tokens.shape[-1],
             )
             all_masks.append(group_mask)
-            
+        print("X nan: ", x.isnan().sum())   
         # TODO: separate timesteps and channels? --> probably origin of 1 in dimensions
         x = torch.cat(all_tokens, dim=1)
         mask = torch.cat(all_masks, dim=1)
