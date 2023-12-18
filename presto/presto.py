@@ -461,6 +461,7 @@ class Encoder(nn.Module):
         # x (BS, len(band_idx)*timesteps, 128) --> (BS, (len(band_idx)*timesteps)+1, 128)
         # lend(band_ix) == n_channel_groups (in our case == n_datasets becouse we do not create subgroup of datasets)
         x = torch.cat((latlon_tokens, x), dim=1)
+        print("X nan after mask: ", x.isnan().sum())
         # apply Transformer blocks
         for blk in self.blocks:
             x = blk(x)
