@@ -10,9 +10,16 @@ def parse_arguments():
     parser.add_argument("--num_timesteps", type=int, default=7,
                         help="number of days for each training slice of pixel timeseries")
     
-    parser.add_argument("--mask_ratio", type=float, default=0.2,
-                        help="mask ratio for soft mask")
+    parser.add_argument("--mask_ratio_random", type=float, default=0.2,
+                        help="mask ratio random strategy for soft mask")
     
+    parser.add_argument("--mask_ratio_timesteps", type=float, default=0.2,
+                        help="mask timesteps strategy for soft mask")
+    
+    parser.add_argument("--mask_ratio_bands", type=float, default=0.2,
+                        help="mask bands strategy for soft mask")
+    
+
     parser.add_argument("--num_epochs", type=int, default=20,
                         help="number of epochs")
     
