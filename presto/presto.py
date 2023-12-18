@@ -426,7 +426,7 @@ class Encoder(nn.Module):
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
-                torch.tensor(self.band_group_to_idx[channel_group]).long().to(device)
+                torch.tensor(self.band_group_to_idx[channel_group]).long()
             )
             channel_embedding = repeat(channel_embedding, "d -> b t d", b=x.shape[0], t=x.shape[1])
             
