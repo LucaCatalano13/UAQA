@@ -188,7 +188,14 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         return self.inference_step(batch)
-
+    
+    def training_epoch_end(self, outputs) -> None:
+        gathered = self.all_gather(outputs)
+        if self.global_rank == 0:
+            # print(gathered)
+            loss = sum(output['loss'].mean() for output in gathered) / len(outputs)
+            print(loss.item())
+            
     def inference_epoch_end(self, outputs, inference_batch):
         x, hard_mask, latlons, day_of_year, day_of_week = inference_batch
         if self.normalized:
