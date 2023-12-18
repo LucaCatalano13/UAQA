@@ -427,7 +427,9 @@ class Encoder(nn.Module):
             # and as values a linear combination (FC) from the number of bands in the channel_group
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
+            print("X tokens: ", x[:,:, channel_idxs].isnan().sum())
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
+            print("Tokens: ", tokens)
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
                 torch.tensor(self.band_group_to_idx[channel_group]).long().to(device)
