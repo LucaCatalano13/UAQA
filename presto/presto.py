@@ -388,8 +388,11 @@ class Encoder(nn.Module):
         batch_size = x.shape[0]
         embedding_dim = x.shape[-1]
         # TODO: mask value = 0?
+        print("Mask tokens: ", x.isnan().sum())
         x[mask.bool()] = 0
+        print("Mask tokens: ", x.isnan().sum())
         x = x.view(batch_size, x.shape[-2], embedding_dim)
+        print("Mask tokens: ", x.isnan().sum())
         return x
 
     def forward(
