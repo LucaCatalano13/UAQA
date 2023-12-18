@@ -13,13 +13,12 @@ def parse_arguments():
     parser.add_argument("--mask_ratio_random", type=float, default=0.2,
                         help="mask ratio random strategy for soft mask")
     
-    parser.add_argument("--mask_ratio_timesteps", type=float, default=0.2,
+    parser.add_argument("--mask_ratio_timesteps", type=float, default=0.15,
                         help="mask timesteps strategy for soft mask")
     
     parser.add_argument("--mask_ratio_bands", type=float, default=0.2,
                         help="mask bands strategy for soft mask")
     
-
     parser.add_argument("--num_epochs", type=int, default=20,
                         help="number of epochs")
     
@@ -27,10 +26,10 @@ def parse_arguments():
     parser.add_argument("--only_test", default=False,
                         help="avoid the train phase and test on --test_path")
     
-    parser.add_argument("--input_data_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
+    parser.add_argument("--input_train_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
                         help="path for loading input data")
     
-    parser.add_argument("--input_test_data_path", type=str, default="data_test_file.pt",
+    parser.add_argument("--input_test_path", type=str, default="data_test_file.pt",
                         help="path for loading input data")
     
     parser.add_argument("--model_presto_path", type=str, default=None,

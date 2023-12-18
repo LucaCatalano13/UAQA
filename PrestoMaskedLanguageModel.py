@@ -45,7 +45,8 @@ def random_masking(mask, harder_mask,  num_tokens_to_mask_array: int):
             mask[i] = all_tokens_mask.reshape( mask[i].shape )
     return mask
 
-def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:list = BANDS_NOT_TO_TRAIN_ON_MLM ):
+def make_mask(x, hard_mask, strategy: str, mask_ratio_random: float, mask_ratio_timesteps: float, 
+              mask_ratio_bands: float, bands_not_to_mask:list = BANDS_NOT_TO_TRAIN_ON_MLM ):
     # x shape is [BS, TS , CH]
     batch_size = x.shape[0]
     num_timesteps = x.shape[1]
@@ -60,7 +61,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
     
     num_tokens_to_mask = np.zeros(batch_size, dtype=int)
     for i in range(batch_size): 
-        num_tokens_to_mask[i] = int(((num_timesteps * num_bands) - harder_mask[i].sum()) * mask_ratio)
+        num_tokens_to_mask[i] = int(((num_timesteps * num_bands) - harder_mask[i].sum()) * mask_ratio_random)
     
     if strategy == "random_combinations":
         mask = random_masking(mask, harder_mask, num_tokens_to_mask)
@@ -71,7 +72,8 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
         #assert num_tokens_to_mask >= 0
         band_groups = list(BANDS_GROUPS_IDX.keys())
         #band_groups_to_mask = sample(band_groups, num_band_groups_to_mask)
-        band_groups_to_mask = sample(band_groups, 1)
+        num_bands_group_to_mask = math.ceil(len(band_groups) * mask_ratio_bands)
+        band_groups_to_mask = sample(band_groups, num_bands_group_to_mask)
 
         for band_group in band_groups_to_mask:
             for idx in BANDS_GROUPS_IDX[band_group]:
@@ -88,7 +90,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
         # timesteps_to_mask = int(num_tokens_to_mask / num_band_groups)
         # timesteps_to_mask = int(num_timesteps * mask_ratio)
 
-        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
+        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio_timesteps)
         timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
         for i in range(batch_size):
             timesteps_to_mask[i] = sample(range(0, num_timesteps), num_timesteps_to_mask)
@@ -99,7 +101,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
         mask = random_masking( mask, harder_mask, num_tokens_to_mask )
 
     elif strategy == "chunk_timesteps":
-        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio)
+        num_timesteps_to_mask = math.ceil(num_timesteps * mask_ratio_timesteps)
         timesteps_to_mask = np.zeros((batch_size, num_timesteps_to_mask), dtype=int)
         for i in range(batch_size):
             start_timestep = sample(range(0, num_timesteps), 1)[0]
@@ -119,13 +121,15 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
     return mask
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
-    def __init__(self, model, mask_ratio, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM):
+    def __init__(self, model, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM):
         super().__init__()
         self.lr = 0.001
         self.model = model
         self.loss_fn = self.configure_loss_function()
         self.optimizer = self.configure_optimizers()
-        self.mask_ratio = mask_ratio
+        self.mask_ratio_random = mask_ratio_random
+        self.mask_ratio_bands = mask_ratio_bands
+        self.mask_ratio_timesteps = mask_ratio_timesteps
         self.bands_not_to_mask = bands_not_to_mask
 
     def configure_optimizers(self):
@@ -145,7 +149,9 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         # define soft mask
-        soft_mask = make_mask(x=x, hard_mask=hard_mask, strategy= MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)], mask_ratio=self.mask_ratio, bands_not_to_mask = self.bands_not_to_mask)
+        soft_mask = make_mask(x=x, hard_mask = hard_mask, strategy = MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)], 
+                              mask_ratio_random = self.mask_ratio_random, mask_ratio_bands = self.mask_ratio_bands, 
+                              mask_ratio_timesteps = self.mask_ratio_timesteps, bands_not_to_mask = self.bands_not_to_mask)
         soft_mask_separated = torch.clone(soft_mask)
         soft_mask_separated[ hard_mask.bool() ] = False
         # mask x
