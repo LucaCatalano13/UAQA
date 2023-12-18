@@ -681,10 +681,13 @@ class Presto(Seq2Seq):
         day_of_week: Union[torch.Tensor, int] = 0
     ) -> torch.Tensor:
         
+        print(x.shape)
+        print(x)
         mean_values = x.mean(dim=(0, 1), keepdim=True)
         std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
         x_norm = (x - mean_values) / std_values
-        
+        print(x_norm.shape)
+        print(x_norm)
         encoded_x = self.encoder(
             x=x_norm,
             latlons=latlons,
