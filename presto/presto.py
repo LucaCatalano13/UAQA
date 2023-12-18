@@ -428,9 +428,9 @@ class Encoder(nn.Module):
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
             print("*X tokens: ", x[:,:, channel_idxs].shape)
-            layer_norm = nn.LayerNorm([1, 7, len(channel_idxs)])
+            layer_norm = nn.LayerNorm([1, 7, len(channel_idxs)]).cuda()
             x[:, :, channel_idxs] = layer_norm(x[:, :, channel_idxs])
-            printprint("**X tokens: ", x[:,:, channel_idxs].shape)
+            print("**X tokens: ", x[:,:, channel_idxs].shape)
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             print("Tokens: ", tokens.isnan().sum())
             # create an embedding of the channel group --> lookup table
