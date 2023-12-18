@@ -164,6 +164,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
         self.log('loss', loss.item(), logger=True)
+        print("Train Loss: ", loss)
         return {"loss": loss}
 
     def inference_step(self, batch):
@@ -183,5 +184,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         reconstructed_x = outputs
         # evaluate validation and test with the loss of the all values in dataset
         loss = self.loss_function(reconstructed_x[~hard_mask], x[~hard_mask])
+        print("Validation Loss: ", loss)
         self.log('loss', loss.item(), logger=True)
         return {"loss": loss}
