@@ -429,7 +429,7 @@ class Encoder(nn.Module):
             # return an initial embedding of the channel group
             print("X tokens: ", x[:,:, channel_idxs].isnan().sum())
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
-            print("Tokens: ", tokens)
+            print("Tokens: ", tokens.isnan().sum())
             # create an embedding of the channel group --> lookup table
             channel_embedding = self.channel_embed(
                 torch.tensor(self.band_group_to_idx[channel_group]).long().to(device)
