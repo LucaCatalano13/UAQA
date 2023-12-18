@@ -428,9 +428,6 @@ class Encoder(nn.Module):
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
             print("*X tokens: ", x[:,:, channel_idxs].shape)
-            layer_norm = nn.LayerNorm([1, 7, len(channel_idxs)]).cuda()
-            x[:, :, channel_idxs] = layer_norm(x[:, :, channel_idxs])
-            print("**X tokens: ", x[:,:, channel_idxs].shape)
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             print("Tokens: ", tokens.isnan().sum())
             # create an embedding of the channel group --> lookup table
@@ -683,8 +680,13 @@ class Presto(Seq2Seq):
         day_of_year: Union[torch.Tensor, int] = 0,
         day_of_week: Union[torch.Tensor, int] = 0
     ) -> torch.Tensor:
+        
+        mean_values = x.mean(dim=(0, 1), keepdim=True)
+        std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
+        x_norm = (x - mean_values) / std_values
+        
         encoded_x = self.encoder(
-            x=x,
+            x=x_norm,
             latlons=latlons,
             mask=mask,
             day_of_year=day_of_year,
