@@ -49,9 +49,9 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
     # x shape is [BS, TS , CH]
     batch_size = x.shape[0]
     num_timesteps = x.shape[1]
-    num_band_groups = len(BANDS) 
+    num_bands = len(BANDS) 
     #mask of same shape of x all False
-    mask_shape = (batch_size, num_timesteps , num_band_groups)
+    mask_shape = (batch_size, num_timesteps , num_bands)
     mask = torch.full(mask_shape , False)
     #avoid some bands during MLM training (usually static ones)
     index_not_to_train_on = [BANDS.index(value) for value in bands_not_to_mask]
@@ -60,7 +60,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
     
     num_tokens_to_mask = np.zeros(batch_size, dtype=int)
     for i in range(batch_size): 
-        num_tokens_to_mask[i] = int(((num_timesteps * num_band_groups) - harder_mask[i].sum()) * mask_ratio)
+        num_tokens_to_mask[i] = int(((num_timesteps * num_bands) - harder_mask[i].sum()) * mask_ratio)
     
     if strategy == "random_combinations":
         mask = random_masking(mask, harder_mask, num_tokens_to_mask)
