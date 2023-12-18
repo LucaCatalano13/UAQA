@@ -427,8 +427,7 @@ class Encoder(nn.Module):
             # and as values a linear combination (FC) from the number of bands in the channel_group
             # to a space of dimension(embedding_size)
             # return an initial embedding of the channel group
-            print("X tokens: ", x[:,:, channel_idxs].isnan().sum())
-            print(self.eo_patch_embed[channel_group].bias.isnan().sum())
+            print("X tokens: ", x[:,:, channel_idxs].shape)
             tokens = self.eo_patch_embed[channel_group](x[:, :, channel_idxs])
             print("Tokens: ", tokens.isnan().sum())
             # create an embedding of the channel group --> lookup table
