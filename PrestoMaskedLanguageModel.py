@@ -16,7 +16,20 @@ MASK_STRATEGIES = (
     "chunk_timesteps",
     "random_combinations",
 )
-BANDS_NOT_TO_TRAIN_ON_MLM = ["LC" , "DEM"]
+
+BANDS_GROUPS_NOT_TO_TRAIN_ON_MLM = ["LC" , "DEM"]
+BANDS_NOT_TO_TRAIN_ON_MLM = ['Urban',
+ 'Road',
+ 'Railways',
+ 'Port',
+ 'Airports',
+ 'Extraction',
+ 'NoUse',
+ 'Green',
+ 'OpenSpaces',
+ 'Water',
+ 'DEM']
+
 
 def random_masking(mask, harder_mask,  num_tokens_to_mask_array: int):
     assert mask.shape[0] == num_tokens_to_mask_array.shape[0]
@@ -32,7 +45,7 @@ def random_masking(mask, harder_mask,  num_tokens_to_mask_array: int):
             mask[i] = all_tokens_mask.reshape( mask[i].shape )
     return mask
 
-def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:list = None ):
+def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:list = BANDS_NOT_TO_TRAIN_ON_MLM ):
     # x shape is [BS, TS , CH]
     batch_size = x.shape[0]
     num_timesteps = x.shape[1]
@@ -42,7 +55,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio: float, bands_not_to_mask:
     mask = torch.full(mask_shape , False)
     #avoid some bands during MLM training (usually static ones)
     index_not_to_train_on = [BANDS.index(value) for value in bands_not_to_mask]
-    harder_mask = hard_mask.copy()
+    harder_mask = hard_mask.clone()
     harder_mask[:, :, index_not_to_train_on] = True
     
     num_tokens_to_mask = np.zeros(batch_size, dtype=int)
