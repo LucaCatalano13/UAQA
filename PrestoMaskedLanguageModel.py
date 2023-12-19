@@ -181,6 +181,8 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
             x = (x - mean_values) / (std_values + 1e-05)
         # forward
         reconstructed_x = self(x, latlons, hard_mask, day_of_year, day_of_week)
+        loss = self.loss_function(reconstructed_x[~hard_mask], x[~hard_mask])
+        self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return reconstructed_x
 
     def validation_step(self, batch, batch_idx):
