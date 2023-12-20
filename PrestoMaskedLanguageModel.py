@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from einops import repeat
 import math
 
-from presto.presto import Presto
+from presto.presto import Encoder, Decoder, Presto
 from random import choice, randint, random, sample
 from datasets.CollectionDataset import BANDS, BANDS_GROUPS_IDX, BAND_EXPANSION
 
@@ -121,10 +121,12 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio_random: float, mask_ratio_
     return mask
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
-    def __init__(self, model, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM, normalized = False):
+    def __init__(self, encoder_config, decoder_config, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM, normalized = False, ):
         super().__init__()
         self.lr = 0.001
-        self.model = model
+        self.encoder = Encoder(**encoder_config)
+        self.decoder = Decoder(self.encoder.channel_embed, **decoder_config)
+        self.model = Presto(self.encoder, self.decoder)
         self.loss_fn = self.configure_loss_function()
         self.optimizer = self.configure_optimizers()
         self.mask_ratio_random = mask_ratio_random
