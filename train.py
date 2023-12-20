@@ -47,10 +47,8 @@ if __name__ == "__main__":
         test_dataset = PixelTimeSeries(num_timesteps=args.num_timesteps, collection_dataset=test_collection_dataset, bound=test_bound)
     
     # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
-    
-    #TODO: test
-    train_dataset, test_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42)
-    train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.5, random_state=42)
+
+    train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42)
     
     train_dataloader = DataLoader(
             train_dataset,
