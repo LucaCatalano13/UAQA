@@ -79,7 +79,7 @@ if __name__ == "__main__":
                   "decoder_depth": args.decoder_depth, "decoder_num_heads": args.decoder_num_heads, 
                   "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
     
-    kwargs_model = {"encoder_config": kwargs_encoder, "decder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
+    kwargs_model = {"encoder_config": kwargs_encoder, "decoder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
                     "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": True}
     
 
