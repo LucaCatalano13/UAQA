@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import math
 import rasterio
 import cv2
 from rasterio.plot import show
@@ -7,6 +9,7 @@ from datasets.ADSP_Dataset import ADSP_Dataset
 
 STATIONS_BANDS = ["SO2","C6H6","NO2","O3","PM10","PM25","CO"]
 LOSS_DEFAULT_FACTOR = 0.3
+R = 6373.0
 
 class Stations(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str, gold_data_path:str, gold_legend_path:str, loss_default_factor = LOSS_DEFAULT_FACTOR):
@@ -76,8 +79,20 @@ class GoldStation():
         self.data = self.__create_data(self.data_path , self.legend_path)
         
     def __create_data(self, data_path: str , legend_path:str):
-        #open csv create dict of dictionary --> k [day][latlon] v [mesurements]
-        pass 
+        self.data = {}
+        data_path_df = pd.read_csv(data_path)
+        legend_path_df = pd.read_csv(legend_path, sep=";")
+        legend_path_df['Location'] = legend_path_df['Location'].str.split(', ')
+        legend_dict = dict(zip(legend_path_df['id_amat'], legend_path_df['Location']))
+        
+        for _, row in data_path_df.iterrows():
+            date = row['date']
+            if date not in self.data:
+                self.data[date] = {}
+            latlon = legend_dict.get(row['station_id'])
+            if latlon:
+                latlon = latlon[1][:-1] + ' ' + latlon[0][1:]
+                self.data[date][latlon] = dict(row[4:])
     
     def get_closest_dist_per_band(self, date, latlon):
         """
@@ -85,7 +100,25 @@ class GoldStation():
         NPArray aligned with STATION_BANDS
       
         """
-        #TODO: write it Luca, I belive in you
-        pass
-    
+        data_single_date = self.data[date]
+        distances = {}
+        for i, band in enumerate(STATIONS_BANDS):
+            for j, latlon_data in enumerate(list(data_single_date.keys())):
+                latlon_data_list = latlon_data.split()
+                if not np.isnan(data_single_date[latlon_data][band]):
+                    lat1 = math.radians(latlon[0])
+                    lat2 = math.radians(float(latlon_data_list[0]))
+                    lon1 = math.radians(latlon[1])
+                    lon2 = math.radians(float(latlon_data_list[1]))
+                    diff_lon = lon2 - lon1
+                    diff_lat = lat2 -lat1 
+                    a = (math.sin(diff_lat/2))**2 + math.cos(lon1) * math.cos(float(lat2)) * (math.sin(diff_lon/2))**2
+                    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+                    dist = R * c
+                    if band in distances.keys():
+                        if dist < distances[band]:
+                            distances[band] = dist
+                    else:
+                        distances[band] = dist
+        return list(distances.values())
 
