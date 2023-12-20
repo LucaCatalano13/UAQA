@@ -15,7 +15,6 @@ from datasets.LandCover import LandCover
 from datasets.CollectionDataset import CollectionDataset
 import parser
 
-from presto.presto import Encoder, Decoder, Presto
 from PixelTimeseries import PixelTimeSeries
 from PrestoMaskedLanguageModel import PrestoMaskedLanguageModel
 
@@ -88,10 +87,7 @@ if __name__ == "__main__":
                   "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
         
         #Random Xavier initialization
-        encoder = Encoder(**kwargs_encoder)
-        decoder = Decoder(encoder.channel_embed, **kwargs_decoder)
-        presto = Presto(encoder, decoder)
-        presto_ml = PrestoMaskedLanguageModel(model = presto, **kwargs_model)
+        presto_ml = PrestoMaskedLanguageModel(kwargs_encoder, kwargs_decoder, **kwargs_model)
     
 
     wandb_logger = WandbLogger(project=args.wandb_project,
