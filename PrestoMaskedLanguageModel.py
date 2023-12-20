@@ -169,10 +169,10 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # compute loss between reconstructed_masked_x (of the masked positions) and masked_x (label)
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
-        self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return {"loss": loss}
-
-    def inference_step(self, batch):
+        self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        return {"train_loss": loss}
+    
+    def validation_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
         if self.normalized:
             # Normalized values        
@@ -182,15 +182,22 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # forward
         reconstructed_x = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
-        self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return reconstructed_x
 
-    def validation_step(self, batch, batch_idx):
-        return self.inference_step(batch)
-
     def test_step(self, batch, batch_idx):
-        return self.inference_step(batch)
-    
+        x, hard_mask, latlons, day_of_year, day_of_week = batch
+        if self.normalized:
+            # Normalized values        
+            mean_values = x.mean(dim=(0, 1), keepdim=True)
+            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
+            x = (x - mean_values) / (std_values + 1e-05)
+        # forward
+        reconstructed_x = self(x, latlons, hard_mask, day_of_year, day_of_week)
+        loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
+        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        return reconstructed_x
+
     def inference_epoch_end(self, outputs, inference_batch):
         x, hard_mask, latlons, day_of_year, day_of_week = inference_batch
         if self.normalized:
@@ -201,5 +208,5 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         reconstructed_x = outputs
         # evaluate validation and test with the loss of the all values in dataset
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
-        self.log('loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return {"loss": loss}
+        self.log('sti_cazzi_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        return {"sti_cazzi_loss": loss}
