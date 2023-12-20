@@ -95,7 +95,9 @@ if __name__ == "__main__":
     wandb_logger = WandbLogger(project=args.wandb_project,
                             name=args.wandb_name,
                             log_model='all')
-    for k, v in vars(args):
+
+    arg_dict = vars(args)
+    for k, v in arg_dict.items():
         wandb_logger.experiment.config[k] = v
 
     checkpoint_cb = ModelCheckpoint(
