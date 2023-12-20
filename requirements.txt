@@ -16,3 +16,4 @@ isort==5.10.1
 mypy==1.1.1
 wandb==0.13.5
 einops==0.3.2
+wandb
