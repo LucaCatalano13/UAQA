@@ -3,6 +3,14 @@ import argparse
 def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    #log parameters
+    
+    parser.add_argument("--wanddb_project", type=str, default="UAQA",
+                        help="project on wanddb where to log into")
+    
+    parser.add_argument("--wanddb_name", type=str, default= None,
+                        help="Name of current experiment")
+    
     # Training parameters
     parser.add_argument("--batch_size", type=int, default=128,
                         help="batch size")
