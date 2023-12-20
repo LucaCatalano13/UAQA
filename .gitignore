@@ -9,3 +9,4 @@ LOGS
 *.pt
 local_test.ipynb
 build_borken_rasterio.ipynb
+wandb_login.txt
