@@ -170,7 +170,7 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         reconstructed_masked_x = reconstructed_x[soft_mask]
         loss = self.loss_function(reconstructed_masked_x, labels)
         self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return {"train_loss": loss}
+        return {"loss": loss}
     
     def validation_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
@@ -209,4 +209,4 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # evaluate validation and test with the loss of the all values in dataset
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
         self.log('sti_cazzi_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return {"sti_cazzi_loss": loss}
+        return {"loss": loss}
