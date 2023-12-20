@@ -36,6 +36,10 @@ def parse_arguments():
     parser.add_argument("--only_test", default=False,
                         help="avoid the train phase and test on --test_path")
     
+    # Finetuning Training Parameters
+    parser.add_argument("--loss_default_factor", type = float, default=0.3,
+                        help="loss factor to weight the weakly label during finetuning training")
+    
     # Architecture parameters
     # Encoder
     parser.add_argument("--encoder_embedding_size", type = int,  default= 128,

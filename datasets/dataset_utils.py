@@ -4,8 +4,8 @@ from pyproj import Transformer, CRS
 from typing import List, Optional
 from tqdm import tqdm
 
-FINAL_H = 18
-FINAL_W = 26
+FINAL_H = 17
+FINAL_W = 18
 
 # resize array
 def resize_array(input_array: np.array, new_shape: tuple, verbose: bool = False, mode="hybrid") -> np.array:
