@@ -7,6 +7,9 @@ def parse_arguments():
     parser.add_argument("--batch_size", type=int, default=128,
                         help="batch size")
     
+    parser.add_argument("--num_workers", type=int, default=2,
+                        help="batch size")
+    
     parser.add_argument("--num_timesteps", type=int, default=7,
                         help="number of days for each training slice of pixel timeseries")
     
@@ -22,10 +25,49 @@ def parse_arguments():
     parser.add_argument("--num_epochs", type=int, default=20,
                         help="number of epochs")
     
-    # Architecture parameters
     parser.add_argument("--only_test", default=False,
                         help="avoid the train phase and test on --test_path")
     
+    # Architecture parameters
+    # Encoder
+    parser.add_argument("--encoder_embedding_size", type = int,  default= 128,
+                        help="dimension of enocder latent space")
+    
+    parser.add_argument("--encoder_channel_embed_ratio", type = float,  default= 0.25,
+                        help="Positional encoding used for channel embedding")
+    
+    parser.add_argument("--encoder_temp_embed_ratio", type = float,default= 0.25,
+                        help="Positional encoding used for temporal embedding")
+    
+    parser.add_argument("--encoder_depth", type = int,default= 2,
+                        help="number of blocks in encoder")
+    
+    parser.add_argument("--encoder_mlp_ratio",type = int, default= 2,
+                        help="ratio of mlp")
+    
+    parser.add_argument("--encoder_num_heads", type = int,default= 8,
+                        help="Number of heads in encoder")
+    
+    parser.add_argument("--encoder_max_sequence_length", type = int,default= 24,
+                        help="Max sequence lenght in encoder")
+    
+    # Decoder    
+    parser.add_argument("--decoder_embed_dim", type = int,default= 128,
+                        help="dimension of decoder latent space")
+    
+    parser.add_argument("--decoder_depth", type = int,default= 2,
+                        help="number of blocks in decoder")
+    
+    parser.add_argument("--decoder_mlp_ratio", type = int,default= 2,
+                        help="ratio of mlp")
+    
+    parser.add_argument("--decoder_num_heads", type = int,default= 8,
+                        help="Number of heads in decoder")
+    
+    parser.add_argument("--decoder_max_sequence_length",type = int, default= 24,
+                        help="Max sequence lenght in decoder")
+    
+    # Paths parameters
     parser.add_argument("--input_train_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
                         help="path for loading input data")
     
@@ -35,9 +77,6 @@ def parse_arguments():
     parser.add_argument("--model_presto_path", type=str, default=None,
                         help="path for loading presto")
     
-    # Visualizations parameters
-
-    # Paths parameters
     # train and validation paths
     parser.add_argument("--era5_path", type=str, default="milan_crop/era5",
                         help="path to Era5 dataset")
@@ -49,6 +88,7 @@ def parse_arguments():
                         help="path to Sentinel 5 dataset")
     parser.add_argument("--dem_path", type=str, default="milan_crop/dem",
                         help="path to Dem dataset")
+    
     # test paths
     parser.add_argument("--era5_test_path", type=str, default="milan_crop_23/era5_2023",
                         help="path to Era5 test dataset")
@@ -60,6 +100,7 @@ def parse_arguments():
                         help="path to Sentinel 5 test dataset")
     parser.add_argument("--dem_test_path", type=str, default="milan_crop_23/dem",
                         help="path to Dem test dataset")
+    
     # legend paths
     parser.add_argument("--era5_legend_path", type=str, default="milan_crop_legend/era5",
                             help="path to Era5 dataset")
