@@ -71,25 +71,25 @@ if __name__ == "__main__":
             shuffle=False,
         )
 
-    kwargs_model = {"mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
+    kwargs_encoder = {"embedding_size": args.encoder_embedding_size, "channel_embed_ratio": args.encoder_channel_embed_ratio, 
+                  "temp_embed_ratio": args.encoder_temp_embed_ratio, "depth": args.encoder_depth, 
+                  "mlp_ratio": args.encoder_mlp_ratio, "num_heads": args.encoder_num_heads, "max_sequence_length": args.encoder_max_sequence_length}
+
+    kwargs_decoder = {"encoder_embed_dim": args.encoder_embedding_size, "decoder_embed_dim": args.decoder_embed_dim,
+                  "decoder_depth": args.decoder_depth, "decoder_num_heads": args.decoder_num_heads, 
+                  "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
+    
+    kwargs_model = {"encoder_config": kwargs_encoder, "decder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
                     "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": True}
     
+
     if args.model_presto_path is not None:
         #Checkpoint init
         presto_ml = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path, **kwargs_model)
     else:
-        kwargs_encoder = {"embedding_size": args.encoder_embedding_size, "channel_embed_ratio": args.encoder_channel_embed_ratio, 
-                  "temp_embed_ratio": args.encoder_temp_embed_ratio, "depth": args.encoder_depth, 
-                  "mlp_ratio": args.encoder_mlp_ratio, "num_heads": args.encoder_num_heads, "max_sequence_length": args.encoder_max_sequence_length}
-
-        kwargs_decoder = {"encoder_embed_dim": args.encoder_embedding_size, "decoder_embed_dim": args.decoder_embed_dim,
-                  "decoder_depth": args.decoder_depth, "decoder_num_heads": args.decoder_num_heads, 
-                  "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
-        
         #Random Xavier initialization
-        presto_ml = PrestoMaskedLanguageModel(kwargs_encoder, kwargs_decoder, **kwargs_model)
+        presto_ml = PrestoMaskedLanguageModel(**kwargs_model)
     
-
     wandb_logger = WandbLogger(project=args.wandb_project,
                             name=args.wandb_name,
                             log_model='all')
