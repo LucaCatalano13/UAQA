@@ -101,7 +101,7 @@ if __name__ == "__main__":
         wandb_logger.experiment.config[k] = v
 
     checkpoint_cb = ModelCheckpoint(
-        monitor='loss',
+        monitor='val_loss',
         filename='_epoch({epoch:02d})',
         auto_insert_metric_name=False,
         save_weights_only=True,
