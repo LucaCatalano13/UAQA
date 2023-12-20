@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
         kwargs_decoder = {"encoder_embed_dim": args.encoder_embedding_size, "decoder_embed_dim": args.decoder_embed_dim,
                   "decoder_depth": args.decoder_depth, "decoder_num_heads": args.decoder_num_heads, 
-                  "mlp_ratio": args.decoder_mlp_ratio, "num_heads": args.decoder_num_heads, "max_sequence_length": args.decoder_max_sequence_length}
+                  "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
         
         #Random Xavier initialization
         encoder = Encoder(**kwargs_encoder)
@@ -92,8 +92,8 @@ if __name__ == "__main__":
                                               mask_ratio_bands=args.mask_ratio_bands, mask_ratio_timesteps=args.mask_ratio_timesteps, normalized=True)
     
 
-    wandb_logger = WandbLogger(project='UAQA',
-                            name="UAQA-run-test",
+    wandb_logger = WandbLogger(project=args.wandb_project,
+                            name=args.wandb_name,
                             log_model='all')
 
     wandb_logger.experiment.config = args
