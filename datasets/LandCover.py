@@ -49,7 +49,9 @@ class LandCover(ADSP_Dataset):
       super().__init__(dataset_folder, legend_folder, LC_BANDS)
       self.original_taxonomy = json.load(open(self.labels_legends[0]))
       self.old_new_classes_dict = old_new_classes_dict
-
+      # save the resized shape of the raster of the dataset
+      self.shape_resized_raster = self.__get_len_with_mask_raster()
+      
     def __set_new_classes(self, matrix: np.ndarray, verbose: bool=False) -> np.ndarray:
       if verbose:
         print(f'Old classes matrix: {matrix}')
@@ -84,3 +86,6 @@ class LandCover(ADSP_Dataset):
         
     def get_mean_per_bands(self):
       return self.__get_all_mean_per_bands()
+    
+    def __get_len_with_mask_raster(self):
+      return (len(self.bands), FINAL_H, FINAL_W)

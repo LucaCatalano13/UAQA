@@ -32,6 +32,7 @@ ERA5_DIV_VALUES = [35.0] * len(ERA5_BANDS)
 class Era5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
       super().__init__(dataset_folder , legend_folder, ERA5_BANDS)
+      self.shape_resized_raster = self.__get_len_with_mask_raster()
 
     def transform(self, raster_data: np.array, final_w: int = FINAL_W, final_h: int = FINAL_H) -> np.array:
       new_raster_data = []
@@ -53,3 +54,6 @@ class Era5(ADSP_Dataset):
         
     def get_mean_per_bands(self):
       return self.__get_all_mean_per_bands()
+    
+    def __get_len_with_mask_raster(self):
+      return (len(self.bands) + 1, FINAL_H, FINAL_W)

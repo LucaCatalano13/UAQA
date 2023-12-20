@@ -22,7 +22,9 @@ S5_DIV_VALUES = [float(1e4)] * len(S5_BANDS)
 class Sentinel5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
       super().__init__(dataset_folder , legend_folder, S5_BANDS)
-
+      # save the resized shape of the raster of the dataset
+      self.shape_resized_raster = self.__get_len_with_mask_raster()
+      
     def __getitem__(self, index: int) -> np.array:
       file = self.files[index]
       raster = rasterio.open(file)
@@ -39,3 +41,6 @@ class Sentinel5(ADSP_Dataset):
     def get_mean_per_bands(self):
       all_mean_per_bands = self.__get_all_mean_per_bands()
       return all_mean_per_bands[::2]
+    
+    def __get_len_with_mask_raster(self):
+      return (len(self.bands) * 2, FINAL_H, FINAL_W)

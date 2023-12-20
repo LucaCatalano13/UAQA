@@ -25,8 +25,6 @@ class ADSP_Dataset (Dataset):
         self.resolution = rasterio.open(self.files[0]).res
         # save the original shape of the raster of the dataset
         self.original_raster_shape = rasterio.open(self.files[0]).shape
-        # save the resized shape of the raster of the dataset
-        self.shape_resized_raster = (len(self.bands), FINAL_H, FINAL_W)
     
     def __len__(self) -> int:
         # the len of the dataset equals to the number of the files it contains
