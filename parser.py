@@ -5,10 +5,10 @@ def parse_arguments():
 
     #log parameters
     
-    parser.add_argument("--wanddb_project", type=str, default="UAQA",
+    parser.add_argument("--wandb_project", type=str, default="UAQA",
                         help="project on wanddb where to log into")
     
-    parser.add_argument("--wanddb_name", type=str, default= None,
+    parser.add_argument("--wandb_name", type=str, default= None,
                         help="Name of current experiment")
     
     # Training parameters
