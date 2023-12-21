@@ -76,10 +76,11 @@ class GoldStation():
     def __init__(self , data_path: str , legend_path:str):
         self.data_path = data_path
         self.legend_path = legend_path
+        
         self.data = self.__create_data(self.data_path , self.legend_path)
         
     def __create_data(self, data_path: str , legend_path:str):
-        self.data = {}
+        data = {}
         data_path_df = pd.read_csv(data_path)
         legend_path_df = pd.read_csv(legend_path, sep=";")
         legend_path_df['Location'] = legend_path_df['Location'].str.split(', ')
@@ -88,11 +89,12 @@ class GoldStation():
         for _, row in data_path_df.iterrows():
             date = row['date']
             if date not in self.data:
-                self.data[date] = {}
+                data[date] = {}
             latlon = legend_dict.get(row['station_id'])
             if latlon:
                 latlon = latlon[1][:-1] + ' ' + latlon[0][1:]
-                self.data[date][latlon] = dict(row[4:])
+                data[date][latlon] = dict(row[4:])
+        return data
     
     def get_closest_dist_per_band(self, date, latlon):
         """
