@@ -9,6 +9,7 @@ from datasets.ADSP_Dataset import ADSP_Dataset
 
 STATIONS_BANDS = ["SO2","C6H6","NO2","O3","PM10","PM25","CO"]
 LOSS_DEFAULT_FACTOR = 0.3
+#Earth Radius
 R = 6373.0
 
 class Stations(ADSP_Dataset):
