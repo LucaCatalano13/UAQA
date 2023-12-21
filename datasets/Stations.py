@@ -104,6 +104,8 @@ class GoldStation():
         """
         data_single_date = self.data[date]
         distances = {}
+        for band in STATIONS_BANDS:
+            distances[band] = np.inf
         for i, band in enumerate(STATIONS_BANDS):
             for j, latlon_data in enumerate(list(data_single_date.keys())):
                 latlon_data_list = latlon_data.split()
