@@ -73,7 +73,7 @@ class PrestoForecasting(pl.LightningModule):
         for i, t in enumerate(zip(outputs, y_true)):
             y_pred, label = t
             loss += torch.sum(loss_factor[i] * self.loss_fn(y_pred, label)) / torch.sum(loss_factor[i])
-        return loss
+        return loss/outputs.shape[0]
     
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
         x = self.encoder(x = x, mask = hard_mask, latlons = latlons, 
@@ -91,7 +91,7 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
     
     def validation_step(self, batch, batch_idx):
@@ -104,7 +104,7 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('val_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
 
     def test_step(self, batch, batch_idx):
@@ -117,5 +117,5 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('test_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
