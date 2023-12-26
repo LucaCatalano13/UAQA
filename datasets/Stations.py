@@ -44,7 +44,6 @@ class Stations(ADSP_Dataset):
     def get_item_temporal_aligned(self, time_index , row_ix, col_ix, date, latlon):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
-        print(time_index, len(self.files_temporal_aligned), len(self.files))
         file = self.files_temporal_aligned[time_index]
         #if original dataset has no data for that index
         if time_index in self.index_temporal_aligned:
