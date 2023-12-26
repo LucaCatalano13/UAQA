@@ -25,7 +25,7 @@ class PixelTimeSeriesLabeled(PixelTimeSeries):
         col_ix = flat_ix % FINAL_W
             
         arrays, hard_mask, latlons, day_of_year, day_of_week = super().__getitem__(index)
-        latlon = self.data[2][0, row_ix, col_ix, 0]
+        latlon = self.data[2][0, row_ix, col_ix, :]
         
         try : 
             date = self.data[3][end_t + 1, row_ix, col_ix]
