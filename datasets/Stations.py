@@ -115,6 +115,8 @@ class GoldStation():
             for j, latlon_data in enumerate(list(data_single_date.keys())):
                 latlon_data_list = latlon_data.split()
                 if not np.isnan(data_single_date[latlon_data][band]):
+                    print(latlon)
+                    print(latlon.item())
                     lat1 = math.radians(latlon[0])
                     lat2 = math.radians(float(latlon_data_list[0]))
                     lon1 = math.radians(latlon[1])
