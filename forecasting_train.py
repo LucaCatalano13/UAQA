@@ -23,6 +23,7 @@ from PrestoMaskedLanguageModel import PrestoMaskedLanguageModel
 if __name__ == "__main__":
     args = parser.parse_arguments()
     if args.input_train_path is not None:
+        print("Loading Train Stations")
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps= args.num_timesteps , input_data_path = args.input_train_path)
     else:
@@ -34,11 +35,13 @@ if __name__ == "__main__":
         train_collection_dataset = CollectionDataset(era = train_era, dem = train_dem, sentinel3 = train_sentinel3, 
                                                      sentinel5 = train_sentinel5, land_cover = train_land_cover)
         train_bound = train_land_cover.get_bound()
+        print("Loading Train Stations")
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps=args.num_timesteps, collection_dataset=train_collection_dataset, bound=train_bound)
         
         
     if args.input_test_path is not None:
+        print("Loading Test Stations")
         test_stations = Stations(dataset_folder = args.stations_test_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_test_path, gold_legend_path = args.golden_stations_legend_path)
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps=args.num_timesteps, input_data_path = args.input_test_path)
     else:
@@ -50,6 +53,7 @@ if __name__ == "__main__":
         test_collection_dataset = CollectionDataset(era = test_era, dem = test_dem, sentinel3 = test_sentinel3, 
                                                      sentinel5 = test_sentinel5, test_cover = test_land_cover)
         test_bound = test_land_cover.get_bound()
+        print("Loading Test Stations")
         test_stations = Stations(dataset_folder = args.stations_test_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_test_path, gold_legend_path = args.golden_stations_legend_path)
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps=args.num_timesteps, collection_dataset=test_collection_dataset, bound=test_bound)
     
@@ -80,6 +84,8 @@ if __name__ == "__main__":
 
     #Load Encoedr Pretrained from PrestoMLM
     assert args.model_presto_path is not None
+
+    print("Loading Encoder")
     kwargs_encoder = {"embedding_size": args.encoder_embedding_size, "channel_embed_ratio": args.encoder_channel_embed_ratio, 
                   "temp_embed_ratio": args.encoder_temp_embed_ratio, "depth": args.encoder_depth, 
                   "mlp_ratio": args.encoder_mlp_ratio, "num_heads": args.encoder_num_heads, "max_sequence_length": args.encoder_max_sequence_length}
