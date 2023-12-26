@@ -149,5 +149,5 @@ class ADSP_Dataset (Dataset):
             self.files_temporal_aligned.append(d)
           if d == date:
             self.files_temporal_aligned.append(self.files[f_idx])
-            while f_idx < len(self.files) and date == self.files[f_idx].split('/')[4].split('T')[0]:
+            while f_idx < len(self.files) and date == self.from_file_path_to_date(self.files[f_idx]):
               f_idx += 1
