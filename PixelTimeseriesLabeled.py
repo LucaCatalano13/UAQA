@@ -12,7 +12,7 @@ class PixelTimeSeriesLabeled(PixelTimeSeries):
         all_dates = np.unique(self.data[3])
         self.stations = stations
         #TODO: check once we have data
-        stations.add_dates_from_files(all_dates)
+        self.stations.add_dates_from_files(all_dates)
     
     def __getitem__(self, index):
         t_index = index % self.num_slices_per_pixel
