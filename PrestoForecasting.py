@@ -65,7 +65,7 @@ class PrestoForecasting(pl.LightningModule):
         return nn.MSELoss(reduction='none')
 
     def loss_function(self, outputs, y_true, loss_factor):
-        return torch.sum(loss_factor * (outputs - y_true) ** 2)
+        return torch.sum(loss_factor * (outputs - y_true) ** 2) / torch.sum(loss_factor)
     
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
         x = self.encoder(x = x, mask = hard_mask, latlons = latlons, 
