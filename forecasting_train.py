@@ -25,6 +25,7 @@ if __name__ == "__main__":
     if args.input_train_path is not None:
         print("Loading Train Stations")
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
+        print("Loaded Train Stations")
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps= args.num_timesteps , input_data_path = args.input_train_path)
     else:
         train_era = Era5(dataset_folder = args.era5_path, legend_folder = args.era5_legend_path)
@@ -37,12 +38,14 @@ if __name__ == "__main__":
         train_bound = train_land_cover.get_bound()
         print("Loading Train Stations")
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
+        print("Loaded Train Stations")
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps=args.num_timesteps, collection_dataset=train_collection_dataset, bound=train_bound)
         
         
     if args.input_test_path is not None:
         print("Loading Test Stations")
         test_stations = Stations(dataset_folder = args.stations_test_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_test_path, gold_legend_path = args.golden_stations_legend_path)
+        print("Loaded Test Stations")
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps=args.num_timesteps, input_data_path = args.input_test_path)
     else:
         test_era = Era5(dataset_folder = args.era5_test_path, legend_folder = args.era5_legend_path)
@@ -55,8 +58,10 @@ if __name__ == "__main__":
         test_bound = test_land_cover.get_bound()
         print("Loading Test Stations")
         test_stations = Stations(dataset_folder = args.stations_test_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_test_path, gold_legend_path = args.golden_stations_legend_path)
+        print("Loaded Test Stations")
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps=args.num_timesteps, collection_dataset=test_collection_dataset, bound=test_bound)
     
+    print("End dataset loading")
     # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
 
     train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42)
