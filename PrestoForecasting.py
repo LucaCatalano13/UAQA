@@ -83,7 +83,7 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('train_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
     
     def validation_step(self, batch, batch_idx):
@@ -96,7 +96,7 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('val_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
 
     def test_step(self, batch, batch_idx):
@@ -109,5 +109,5 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
-        self.log('test_loss', loss, logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
