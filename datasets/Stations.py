@@ -69,7 +69,7 @@ class Stations(ADSP_Dataset):
             print("Max: ", band.max())
             show((raster, i+1))
     
-    def from_file_path_to_date(string):
+    def from_file_path_to_date(self, string):
       return string.split('/')[4].split('.')[0]
 
     def get_mean_per_bands(self):

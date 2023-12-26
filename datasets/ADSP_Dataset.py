@@ -131,7 +131,7 @@ class ADSP_Dataset (Dataset):
                 n_values[band] += np.sum(~np.isnan(raster[band]))
         return sum_values_per_bands / n_values
     
-    def from_file_path_to_date(string):
+    def from_file_path_to_date(self, string):
         raise NotImplementedError
     
     def add_dates_from_files(self, tot_dates_all):
