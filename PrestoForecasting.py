@@ -70,7 +70,8 @@ class PrestoForecasting(pl.LightningModule):
         loss = torch.Tensor( loss )
         
         #weighted loss on loss_factor := for_each_i [loss_fact_i*loss_i] / for_each_i sum[loss_factor_i]
-        for i, y_pred, label in enumerate(zip(outputs, y_true)):
+        for i, t in enumerate(zip(outputs, y_true)):
+            y_pred, label = t
             loss += loss_factor[i] * self.loss_fn(y_pred, label)
         loss = loss/loss_factor.sum()
         return loss
