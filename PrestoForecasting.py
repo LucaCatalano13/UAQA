@@ -10,13 +10,50 @@ from presto.presto import Encoder, Decoder, Presto
 from random import choice, randint, random, sample
 from datasets.CollectionDataset import BANDS, BANDS_GROUPS_IDX, BAND_EXPANSION
 
-class PrestoForecasting(pl.LightningModule):
-    def __init__(self, encoder_config, normalized = False, ):
+
+class Mlp(nn.Module):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        bias=True,
+        drop=0.0,
+    ):
         super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+
+        self.fc1 = nn.Linear(in_features, hidden_features, bias=bias)
+        self.act = act_layer()
+        self.drop1 = nn.Dropout(drop)
+        self.fc2 = nn.Linear(hidden_features, out_features, bias=bias)
+        self.drop2 = nn.Dropout(drop)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop1(x)
+        x = self.fc2(x)
+        x = self.drop2(x)
+        return x
+
+
+class PrestoForecasting(pl.LightningModule):
+    def __init__(self, encoder, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7 ):
+        super().__init__()
+        #encoder
+        self.encoder = encoder
+        #regressor head
+        self.MLP_hidden_features = MLP_hidden_features
+        self.MLP_out_features = MLP_out_features
+        self.regressor = Mlp(self.encoder.embedding_size, 
+                             hidden_features=self.MLP_hidden_features, 
+                             out_features = self.MLP_out_features , 
+                             act_layer= nn.PReLU(num_parameters=self.MLP_out_features))
+        #training params
         self.lr = 0.001
-        self.encoder = Encoder(**encoder_config)
-        #decide regressor
-        self.regressor = None #Parametrized RELU as activ function for MLP
         self.loss_fn = self.configure_loss_function()
         self.optimizer = self.configure_optimizers()
         self.normalized = normalized
@@ -31,8 +68,10 @@ class PrestoForecasting(pl.LightningModule):
         loss_factor = torch.Tensor(loss_factor)
         loss = 0
         loss = torch.Tensor( loss )
-        for i, output, label in enumerate(zip(outputs, y_true)):
-            loss += loss_factor[i] * self.loss_fn(output, label)
+        
+        #weighted loss on loss_factor := for_each_i [loss_fact_i*loss_i] / for_each_i sum[loss_factor_i]
+        for i, y_pred, label in enumerate(zip(outputs, y_true)):
+            loss += loss_factor[i] * self.loss_fn(y_pred, label)
         loss = loss/loss_factor.sum()
         return loss
     

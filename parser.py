@@ -40,6 +40,12 @@ def parse_arguments():
     parser.add_argument("--loss_default_factor", type = float, default=0.3,
                         help="loss factor to weight the weakly label during finetuning training")
     
+    parser.add_argument("--MLP_hidden_features", type = int, default=64,
+                        help="size of hidden layer of MLP regression head")
+    
+    parser.add_argument("--MLP_out_features", type = int, default=7,
+                        help="number of target values to predict with MLP regression head")
+    
     # Architecture parameters
     # Encoder
     parser.add_argument("--encoder_embedding_size", type = int,  default= 128,
@@ -80,14 +86,17 @@ def parse_arguments():
                         help="Max sequence lenght in decoder")
     
     # Paths parameters
-    parser.add_argument("--input_train_path", type=str, default="/content/drive/MyDrive/data_small_file.pt",
+    parser.add_argument("--input_train_path", type=str, default=None,
                         help="path for loading input data")
     
-    parser.add_argument("--input_test_path", type=str, default="data_test_file.pt",
+    parser.add_argument("--input_test_path", type=str, default=None,
                         help="path for loading input data")
     
     parser.add_argument("--model_presto_path", type=str, default=None,
                         help="path for loading presto")
+    
+    parser.add_argument("--model_presto_forecasting_path", type=str, default=None,
+                        help="path for loading presto regression model")
     
     # train and validation paths
     parser.add_argument("--era5_path", type=str, default="milan_crop/era5",
@@ -100,7 +109,11 @@ def parse_arguments():
                         help="path to Sentinel 5 dataset")
     parser.add_argument("--dem_path", type=str, default="milan_crop/dem",
                         help="path to Dem dataset")
-    
+    parser.add_argument("--stations_path", type=str, default=None,
+                        help="path to stations .tiff dataset")
+    parser.add_argument("--golden_stations_path", type=str, default=None,
+                        help="path to stations .csv dataset")
+     
     # test paths
     parser.add_argument("--era5_test_path", type=str, default="milan_crop_23/era5_2023",
                         help="path to Era5 test dataset")
@@ -112,6 +125,10 @@ def parse_arguments():
                         help="path to Sentinel 5 test dataset")
     parser.add_argument("--dem_test_path", type=str, default="milan_crop_23/dem",
                         help="path to Dem test dataset")
+    parser.add_argument("--stations_test_path", type=str, default=None,
+                        help="path to stations .tiff dataset")
+    parser.add_argument("--golden_stations_test_path", type=str, default=None,
+                        help="path to stations .csv dataset")
     
     # legend paths
     parser.add_argument("--era5_legend_path", type=str, default="milan_crop_legend/era5",
@@ -124,6 +141,10 @@ def parse_arguments():
                         help="path to Sentinel 5 dataset")
     parser.add_argument("--dem_legend_path", type=str, default="milan_crop_legend/dem",
                         help="path to Dem dataset")
+    parser.add_argument("--stations_legend_path", type=str, default=None,
+                        help="path to stations .tiff dataset legend")
+    parser.add_argument("--golden_stations_legend_path", type=str, default=None,
+                        help="path to stations .csv dataset legend")
 
 
     # Visualization parameters
