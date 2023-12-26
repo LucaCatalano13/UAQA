@@ -26,7 +26,7 @@ class Mlp(nn.Module):
         hidden_features = hidden_features or in_features
 
         self.fc1 = nn.Linear(in_features, hidden_features, bias=bias)
-        self.act = act_layer()
+        self.act = act_layer
         self.drop1 = nn.Dropout(drop)
         self.fc2 = nn.Linear(hidden_features, out_features, bias=bias)
         self.drop2 = nn.Dropout(drop)
