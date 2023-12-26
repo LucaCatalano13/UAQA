@@ -131,6 +131,9 @@ class ADSP_Dataset (Dataset):
                 n_values[band] += np.sum(~np.isnan(raster[band]))
         return sum_values_per_bands / n_values
     
+    def from_file_path_to_date(string):
+        raise NotImplementedError
+    
     def add_dates_from_files(self, tot_dates_all):
       self.files_temporal_aligned = []
       self.index_temporal_aligned = []
@@ -138,7 +141,7 @@ class ADSP_Dataset (Dataset):
       f_idx = 0
       for i, d in enumerate(tot_dates_all):
           if f_idx < len(self.files):
-            date = self.files[f_idx].split('/')[4].split('T')[0]
+            date = self.from_file_path_to_date(self.files[f_idx])
           else:
             end = True
           if d < date or end:

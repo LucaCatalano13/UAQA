@@ -32,7 +32,7 @@ class Sentinel3(ADSP_Dataset):
           if str(s) in str(f):
             check = False
         if check:
-          string_date = str(f).split('/')[2].split('T')[0]
+          string_date = str(f).split('/')[4].split('T')[0]
           if string_date not in dictionary_date_signle_file:
             dictionary_date_signle_file[string_date] = str(f)
       self.files_temporal_aligned = sorted(list(dictionary_date_signle_file.values()))
@@ -41,5 +41,8 @@ class Sentinel3(ADSP_Dataset):
       all_mean_per_bands = self.__get_all_mean_per_bands()
       return all_mean_per_bands[:-1]
     
+    def from_file_path_to_date(string):
+      return string.split('/')[4].split('T')[0]
+
     def __get_len_with_mask_raster(self):
       return (len(self.bands) + 1, FINAL_H, FINAL_W)

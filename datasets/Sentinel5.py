@@ -42,5 +42,8 @@ class Sentinel5(ADSP_Dataset):
       all_mean_per_bands = self.__get_all_mean_per_bands()
       return all_mean_per_bands[::2]
     
+    def from_file_path_to_date(string):
+      return string.split('/')[4].split('T')[0]
+
     def __get_len_with_mask_raster(self):
       return (len(self.bands) * 2, FINAL_H, FINAL_W)
