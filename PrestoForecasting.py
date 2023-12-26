@@ -26,7 +26,7 @@ class Mlp(nn.Module):
         hidden_features = hidden_features or in_features
 
         self.fc1 = nn.Linear(in_features, hidden_features, bias=bias)
-        self.act = act_layer
+        self.act = act_layer(num_parameters=hidden_features)
         self.drop1 = nn.Dropout(drop)
         self.fc2 = nn.Linear(hidden_features, out_features, bias=bias)
         self.drop2 = nn.Dropout(drop)
@@ -51,7 +51,7 @@ class PrestoForecasting(pl.LightningModule):
         self.regressor = Mlp(self.encoder.embedding_size, 
                              hidden_features=self.MLP_hidden_features, 
                              out_features = self.MLP_out_features , 
-                             act_layer= nn.PReLU(num_parameters=self.MLP_out_features))
+                             act_layer= nn.PReLU)
         #training params
         self.lr = 0.001
         self.loss_fn = self.configure_loss_function()
