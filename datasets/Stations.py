@@ -89,7 +89,7 @@ class GoldStation():
         
         for _, row in data_path_df.iterrows():
             date = row['date']
-            if date not in self.data:
+            if date not in data:
                 data[date] = {}
             latlon = legend_dict.get(row['station_id'])
             if latlon:
