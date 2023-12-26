@@ -4,6 +4,10 @@ from pyproj import Transformer, CRS
 from typing import List, Optional
 from tqdm import tqdm
 import datetime
+import math
+from shapely.geometry import Point
+from shapely.ops import transform
+from pyproj import Transformer, CRS
 
 from datasets.Dem import DEM_BANDS
 from datasets.LandCover import LC_BANDS
@@ -79,16 +83,28 @@ def construct_single_presto_input(
     return x, hard_mask
 
 def get_city_grids(bounds, radius=0.0045):
+# TODO: not used, we are already in 4326 and we have to go back to 4326
+    #converted is used only in gridbox, that we haven't
     l = np.ndarray((FINAL_H, FINAL_W, 2))
+    x_min, y_max, x_max, y_min = bounds
+    # EPSG 32632
+    point_min = Point(x_min, y_min)
+    point_max = Point(x_max, y_max)
     converted = Transformer.from_crs(CRS.from_epsg(4326), CRS.from_epsg(32632), always_xy=True).transform
-    xmin, ymax, xmax, ymin = bounds
-    x = xmin+radius/2
+    point_min_converted = transform(converted, point_min)
+    point_max_converted = transform(converted, point_max)
+    x_min, x_max, y_min, y_max = point_min_converted.x, point_max_converted.x, point_min_converted.y, point_max_converted.y
+    x = x_min+radius/2
     ix_x = 0
-    while x < xmax:
-        y = ymin+radius/2
+    while x < x_max:
+        y = y_min+radius/2
         ix_y = 0
-        while y < ymax:
-            l[ix_y, ix_x, :] = np.array([x, y])
+        while y < y_max:
+            new_point = Point(x, y)
+            inv_converted = Transformer.from_crs(CRS.from_epsg(32632), CRS.from_epsg(4326), always_xy=True).transform
+            point_converted = transform(inv_converted, new_point)
+            x_conv, y_conv = point_converted.x, point_converted.y
+            l[ix_y, ix_x, :] = np.array([x_conv, y_conv])
             y+=radius
             ix_y+=1
         x+=radius
