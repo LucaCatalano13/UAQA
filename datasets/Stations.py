@@ -119,6 +119,7 @@ class GoldStation():
                     lat2 = math.radians(float(latlon_data_list[1]))
                     lon1 = math.radians(latlon[0])
                     lon2 = math.radians(float(latlon_data_list[0]))
+                    print(lat1, lat2, lon1, lon2)
                     diff_lon = lon2 - lon1
                     diff_lat = lat2 -lat1 
                     a = (math.sin(diff_lat/2))**2 + math.cos(lon1) * math.cos(float(lat2)) * (math.sin(diff_lon/2))**2
