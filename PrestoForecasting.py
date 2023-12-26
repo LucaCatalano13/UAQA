@@ -65,11 +65,16 @@ class PrestoForecasting(pl.LightningModule):
         return nn.MSELoss()
 
     def loss_function(self, outputs, y_true, loss_factor):
-        loss_factor = torch.Tensor(loss_factor)        
-        print(outputs.shape, y_true.shape, loss_factor.shape)
+        loss_factor = torch.Tensor(loss_factor)
+        loss = 0
+        loss = torch.Tensor( loss )
+        
         #weighted loss on loss_factor := for_each_i [loss_fact_i*loss_i] / for_each_i sum[loss_factor_i]
-        loss = loss_factor * self.loss_fn(outputs, y_true)
-        loss = loss/loss_factor.sum(axis=1)
+        for i, t in enumerate(zip(outputs, y_true)):
+            y_pred, label = t
+            print(loss_factor[i].shape, y_pred.shape, label.shape)
+            loss += loss_factor[i] * self.loss_fn(y_pred, label)
+        loss = loss/loss_factor.sum()
         return loss
     
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
