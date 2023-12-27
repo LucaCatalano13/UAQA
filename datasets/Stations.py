@@ -31,15 +31,15 @@ class Stations(ADSP_Dataset):
     def get_loss_factor(self, date, latlon):
         if date not in self.gold_stations.data:
             return np.full(len(STATIONS_BANDS), self.loss_default_factor)
-        closest_dist_per_band = self.gold_stations.get_closest_dist_per_band(date, latlon)
+        closest_dist_per_band, closest_label = self.gold_stations.get_closest_dist_per_band(date, latlon)
         loss_factors = np.ndarray(len(STATIONS_BANDS))
         for i in range(len(closest_dist_per_band)):
-            if np.isclose(closest_dist_per_band[i], 0):
+            if np.isclose(closest_dist_per_band[i], 0, atol=0.38769159659895186):
                 loss_factors[i] = 1
             else:
                 loss_factors[i] = self.loss_default_factor
         
-        return loss_factors
+        return loss_factors, closest_label
     
     def get_item_temporal_aligned(self, time_index, row_ix, col_ix, date, latlon):
         assert self.files_temporal_aligned is not None
@@ -58,7 +58,12 @@ class Stations(ADSP_Dataset):
         raster_array = self.transform(raster_data)
         #len(STATIONS_BANDS)
         label = raster_array[:, row_ix , col_ix].flatten()
-        loss_factor = self.get_loss_factor(date, latlon)
+        loss_factor, closest_label = self.get_loss_factor(date, latlon)
+        
+        for i in range(len(STATIONS_BANDS)):
+            if loss_factor[i] == 1:
+                label[i] = closest_label[i]
+
         return label , loss_factor
         
     def show_raster(self, index):
@@ -110,6 +115,7 @@ class GoldStation():
         """
         data_single_date = self.data[date]
         distances = {}
+        label = {}
         for band in STATIONS_BANDS:
             distances[band] = np.inf
         for i, band in enumerate(STATIONS_BANDS):
@@ -128,8 +134,10 @@ class GoldStation():
                     if band in distances.keys():
                         if dist < distances[band]:
                             distances[band] = dist
+                            label[band] = data_single_date[latlon_data][band]
                     else:
                         distances[band] = dist
-        return list(distances.values())
+                        label[band] = data_single_date[latlon_data][band]
+        return list(distances.values()), list(label.values())
 
 
