@@ -34,14 +34,14 @@ class Stations(ADSP_Dataset):
         closest_dist_per_band = self.gold_stations.get_closest_dist_per_band(date, latlon)
         loss_factors = np.ndarray(len(STATIONS_BANDS))
         for i in range(len(closest_dist_per_band)):
-            if np.isclose( closest_dist_per_band[i] , 0 ):
+            if np.isclose(closest_dist_per_band[i], 0):
                 loss_factors[i] = 1
             else:
                 loss_factors[i] = self.loss_default_factor
         
         return loss_factors
     
-    def get_item_temporal_aligned(self, time_index , row_ix, col_ix, date, latlon):
+    def get_item_temporal_aligned(self, time_index, row_ix, col_ix, date, latlon):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[time_index]
@@ -79,13 +79,13 @@ class Stations(ADSP_Dataset):
     
     
 class GoldStation():
-    def __init__(self , data_path: str , legend_path:str):
+    def __init__(self, data_path: str, legend_path:str):
         self.data_path = data_path
         self.legend_path = legend_path
         
-        self.data = self.__create_data(self.data_path , self.legend_path)
+        self.data = self.__create_data(self.data_path, self.legend_path)
         
-    def __create_data(self, data_path: str , legend_path:str):
+    def __create_data(self, data_path: str, legend_path:str):
         data = {}
         data_path_df = pd.read_csv(data_path)
         legend_path_df = pd.read_csv(legend_path, sep=";")
