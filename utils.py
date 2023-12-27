@@ -82,7 +82,7 @@ def construct_single_presto_input(
         x = normalize(x)
     return x, hard_mask
 
-def get_city_grids(bounds, radius=0.0045):
+def get_city_grids(bounds, radius=500):
 # TODO: not used, we are already in 4326 and we have to go back to 4326
     #converted is used only in gridbox, that we haven't
     l = np.ndarray((FINAL_H, FINAL_W, 2))
