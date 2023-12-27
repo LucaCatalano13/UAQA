@@ -20,6 +20,9 @@ def parse_arguments():
     
     parser.add_argument("--num_timesteps", type=int, default=7,
                         help="number of days for each training slice of pixel timeseries")
+
+    parser.add_argument("--jump", type=int, default=2,
+                        help="jump number of days for each training slice of pixel timeseries")
     
     parser.add_argument("--mask_ratio_random", type=float, default=0.2,
                         help="mask ratio random strategy for soft mask")

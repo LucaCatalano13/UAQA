@@ -76,7 +76,9 @@ class Stations(ADSP_Dataset):
             show((raster, i+1))
     
     def from_file_path_to_date(self, string):
-      return string.split('/')[4].split('.')[0]
+        # è 4 su COLAB!!!!!!!
+        # print(string.split('/')[5])
+        return string.split('/')[6].split('.')[0]
 
     def get_mean_per_bands(self):
         all_mean_per_bands = self.__get_all_mean_per_bands()
