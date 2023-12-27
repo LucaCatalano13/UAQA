@@ -9,7 +9,8 @@ from datasets.ADSP_Dataset import ADSP_Dataset
 
 STATIONS_BANDS = ["SO2","C6H6","NO2","O3","PM10","PM25","CO"]
 LOSS_DEFAULT_FACTOR = 0.3
-#Earth Radius
+MAX_DISTANCE = 10.222
+# Earth Radius
 R = 6373.0
 
 class Stations(ADSP_Dataset):
@@ -28,6 +29,14 @@ class Stations(ADSP_Dataset):
             new_raster_data.append(new_raster_band)
         return np.array(new_raster_data)
     
+    def __scale_value(self, distance):
+        # Ensure distance is within the range [0, MAX_DISTANCE]
+        distance = min(max(distance, 0), MAX_DISTANCE)
+        
+        # Scale the distance to the range [0.3, 1]
+        scaled_value = 1 - (distance / MAX_DISTANCE) * (1 - self.loss_default_factor)  # Linear scaling
+        return scaled_value
+
     def get_loss_factor(self, date, latlon):
         if date not in self.gold_stations.data.keys():
             return np.full(len(STATIONS_BANDS), self.loss_default_factor)
@@ -37,7 +46,7 @@ class Stations(ADSP_Dataset):
             if np.isclose(closest_dist_per_band[i], 0, atol=0.38769159659895186):
                 loss_factors[i] = 1
             else:
-                loss_factors[i] = self.loss_default_factor
+                loss_factors[i] = self.__scale_value(closest_dist_per_band[i])
         
         return loss_factors, closest_label
     
