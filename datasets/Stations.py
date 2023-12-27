@@ -29,7 +29,7 @@ class Stations(ADSP_Dataset):
         return np.array(new_raster_data)
     
     def get_loss_factor(self, date, latlon):
-        if date not in self.gold_stations.data:
+        if date not in self.gold_stations.data.keys():
             return np.full(len(STATIONS_BANDS), self.loss_default_factor)
         closest_dist_per_band, closest_label = self.gold_stations.get_closest_dist_per_band(date, latlon)
         loss_factors = np.ndarray(len(STATIONS_BANDS))
@@ -59,7 +59,7 @@ class Stations(ADSP_Dataset):
         #len(STATIONS_BANDS)
         label = raster_array[:, row_ix , col_ix].flatten()
         loss_factor, closest_label = self.get_loss_factor(date, latlon)
-        
+
         for i in range(len(STATIONS_BANDS)):
             if loss_factor[i] == 1:
                 label[i] = closest_label[i]
