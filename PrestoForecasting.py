@@ -27,16 +27,17 @@ class Mlp(nn.Module):
 
         self.fc1 = nn.Linear(in_features, hidden_features, bias=bias)
         self.act = act_layer(num_parameters=hidden_features)
-        self.drop1 = nn.Dropout(drop)
+        # self.drop1 = nn.Dropout(drop)
         self.fc2 = nn.Linear(hidden_features, out_features, bias=bias)
-        self.drop2 = nn.Dropout(drop)
+        # self.drop2 = nn.Dropout(drop)
 
     def forward(self, x):
         x = self.fc1(x)
         x = self.act(x)
-        x = self.drop1(x)
+        # x = self.drop1(x)
         x = self.fc2(x)
-        x = self.drop2(x)
+        # x = self.drop2(x)
+        # TODO: pRELU
         return x
 
 
@@ -48,6 +49,7 @@ class PrestoForecasting(pl.LightningModule):
         #regressor head
         self.MLP_hidden_features = MLP_hidden_features
         self.MLP_out_features = MLP_out_features
+        # TODO: MLP per inquinante
         self.regressor = Mlp(self.encoder.embedding_size, 
                              hidden_features=self.MLP_hidden_features, 
                              out_features = self.MLP_out_features , 
@@ -65,6 +67,7 @@ class PrestoForecasting(pl.LightningModule):
         return nn.MSELoss(reduction='none')
 
     def loss_function(self, outputs, y_true, loss_factor):
+        # TODO: loss MAE per inquinante, %       
         return torch.sum(loss_factor * (outputs - y_true) ** 2) / torch.sum(loss_factor)
     
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
@@ -99,6 +102,7 @@ class PrestoForecasting(pl.LightningModule):
         self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
 
+    #TODO: solo gold stations?
     def test_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
         if self.normalized:
