@@ -41,7 +41,7 @@ class Stations(ADSP_Dataset):
         if date not in self.gold_stations.data.keys():
             return np.full(len(STATIONS_BANDS), self.loss_default_factor)
         closest_dist_per_band, closest_label = self.gold_stations.get_closest_dist_per_band(date, latlon)
-        loss_factors = np.ndarray(len(STATIONS_BANDS))
+        loss_factors = np.ndarray(len(STATIONS_BANDS)), np.full(len(STATIONS_BANDS), np.nan)
         for i in range(len(closest_dist_per_band)):
             if np.isclose(closest_dist_per_band[i], 0, atol=0.38769159659895186):
                 loss_factors[i] = 1
