@@ -9,7 +9,8 @@ from datasets.ADSP_Dataset import ADSP_Dataset
 
 STATIONS_BANDS = ["SO2","C6H6","NO2","O3","PM10","PM25","CO"]
 LOSS_DEFAULT_FACTOR = 0.3
-#Earth Radius
+MAX_DISTANCE = 10.222
+# Earth Radius
 R = 6373.0
 
 class Stations(ADSP_Dataset):
@@ -28,20 +29,28 @@ class Stations(ADSP_Dataset):
             new_raster_data.append(new_raster_band)
         return np.array(new_raster_data)
     
+    def __scale_value(self, distance):
+        # Ensure distance is within the range [0, MAX_DISTANCE]
+        distance = min(max(distance, 0), MAX_DISTANCE)
+        
+        # Scale the distance to the range [0.3, 1]
+        scaled_value = 1 - (distance / MAX_DISTANCE) * (1 - self.loss_default_factor)  # Linear scaling
+        return scaled_value
+
     def get_loss_factor(self, date, latlon):
-        if date not in self.gold_stations.data:
+        if date not in self.gold_stations.data.keys():
             return np.full(len(STATIONS_BANDS), self.loss_default_factor)
-        closest_dist_per_band = self.gold_stations.get_closest_dist_per_band(date, latlon)
+        closest_dist_per_band, closest_label = self.gold_stations.get_closest_dist_per_band(date, latlon)
         loss_factors = np.ndarray(len(STATIONS_BANDS))
         for i in range(len(closest_dist_per_band)):
-            if np.isclose( closest_dist_per_band[i] , 0 ):
+            if np.isclose(closest_dist_per_band[i], 0, atol=0.38769159659895186):
                 loss_factors[i] = 1
             else:
-                loss_factors[i] = self.loss_default_factor
+                loss_factors[i] = self.__scale_value(closest_dist_per_band[i])
         
-        return loss_factors
+        return loss_factors, closest_label
     
-    def get_item_temporal_aligned(self, time_index , row_ix, col_ix, date, latlon):
+    def get_item_temporal_aligned(self, time_index, row_ix, col_ix, date, latlon):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[time_index]
@@ -58,7 +67,12 @@ class Stations(ADSP_Dataset):
         raster_array = self.transform(raster_data)
         #len(STATIONS_BANDS)
         label = raster_array[:, row_ix , col_ix].flatten()
-        loss_factor = self.get_loss_factor(date, latlon)
+        loss_factor, closest_label = self.get_loss_factor(date, latlon)
+
+        for i in range(len(STATIONS_BANDS)):
+            if loss_factor[i] == 1:
+                label[i] = closest_label[i]
+
         return label , loss_factor
         
     def show_raster(self, index):
@@ -71,7 +85,8 @@ class Stations(ADSP_Dataset):
             show((raster, i+1))
     
     def from_file_path_to_date(self, string):
-      return string.split('/')[4].split('.')[0]
+        # è 4 su COLAB!!!!!!!
+        return string.split('/')[4].split('.')[0]
 
     def get_mean_per_bands(self):
         all_mean_per_bands = self.__get_all_mean_per_bands()
@@ -79,13 +94,13 @@ class Stations(ADSP_Dataset):
     
     
 class GoldStation():
-    def __init__(self , data_path: str , legend_path:str):
+    def __init__(self, data_path: str, legend_path:str):
         self.data_path = data_path
         self.legend_path = legend_path
         
-        self.data = self.__create_data(self.data_path , self.legend_path)
+        self.data = self.__create_data(self.data_path, self.legend_path)
         
-    def __create_data(self, data_path: str , legend_path:str):
+    def __create_data(self, data_path: str, legend_path:str):
         data = {}
         data_path_df = pd.read_csv(data_path)
         legend_path_df = pd.read_csv(legend_path, sep=";")
@@ -110,6 +125,7 @@ class GoldStation():
         """
         data_single_date = self.data[date]
         distances = {}
+        label = {}
         for band in STATIONS_BANDS:
             distances[band] = np.inf
         for i, band in enumerate(STATIONS_BANDS):
@@ -128,8 +144,10 @@ class GoldStation():
                     if band in distances.keys():
                         if dist < distances[band]:
                             distances[band] = dist
+                            label[band] = data_single_date[latlon_data][band]
                     else:
                         distances[band] = dist
-        return list(distances.values())
+                        label[band] = data_single_date[latlon_data][band]
+        return list(distances.values()), list(label.values())
 
 
