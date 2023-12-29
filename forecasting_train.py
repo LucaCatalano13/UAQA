@@ -62,24 +62,25 @@ if __name__ == "__main__":
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps= args.num_timesteps, jump=args.jump, collection_dataset=test_collection_dataset, bound=test_bound)
     
     print("End dataset loading")
-    # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
+    if not args.only_test:
+        # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
 
-    train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42, shuffle=False)
-    
-    print("Train Dataloader loading")
-    train_dataloader = DataLoader(
-            train_dataset,
-            batch_size=args.batch_size,
-            num_workers=2,
-            shuffle=False,
-        )
-    print("Val Dataloader loading")
-    val_dataloader = DataLoader(
-            val_dataset,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=False,
-        )
+        train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42, shuffle=False)
+        
+        print("Train Dataloader loading")
+        train_dataloader = DataLoader(
+                train_dataset,
+                batch_size=args.batch_size,
+                num_workers=2,
+                shuffle=False,
+            )
+        print("Val Dataloader loading")
+        val_dataloader = DataLoader(
+                val_dataset,
+                batch_size=args.batch_size,
+                num_workers=args.num_workers,
+                shuffle=False,
+            )
     print("Test Dataloader loading")
     test_dataloader = DataLoader(
             test_dataset,
