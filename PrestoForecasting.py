@@ -60,6 +60,11 @@ class PrestoForecasting(pl.LightningModule):
                                 out_features = 1 , 
                                 act_layer= nn.PReLU) 
                                     for _ in range(self.MLP_out_features) ]
+        
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        for regressor in self.regressors:
+            regressor.to(device)
+        
         #training params
         self.lr = 0.001
         self.loss_fn = self.configure_loss_function()
@@ -79,7 +84,6 @@ class PrestoForecasting(pl.LightningModule):
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
         x = self.encoder(x = x, mask = hard_mask, latlons = latlons, 
                         day_of_year = day_of_year, day_of_week = day_of_week)
-        print(x.get_device())
         y_pred = torch.Tensor([regressor(x) for regressor in self.regressors])
         return y_pred
 
