@@ -47,7 +47,7 @@ class Mlp(nn.Module):
 
 
 class PrestoForecasting(pl.LightningModule):
-    def __init__(self, encoder, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7 ):
+    def __init__(self, encoder=None, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7):
         super().__init__()
         #encoder
         self.encoder = encoder
