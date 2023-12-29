@@ -111,6 +111,7 @@ if __name__ == "__main__":
     #Load or initialize a Forecastinf model based on Presto Encoder
     if args.model_presto_forecasting_path is not None:
         #Checkpoint init
+        print("I'm here")
         presto_forecasting = PrestoForecasting.load_from_checkpoint(args.model_presto_forecasting_path)
     else:
         #Random Xavier initialization
