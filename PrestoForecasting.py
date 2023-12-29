@@ -47,22 +47,19 @@ class Mlp(nn.Module):
 
 
 class PrestoForecasting(pl.LightningModule):
-    def __init__(self, encoder = None, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7, encoder_config = None):
+    def __init__(self, encoder, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7):
         super().__init__()
         #encoder
-        if encoder is not None:
-            self.encoder = encoder
-        else:
-            self.encoder = Encoder(**encoder_config)
+        self.encoder = encoder
         #regressor head
         self.MLP_hidden_features = MLP_hidden_features
         self.MLP_out_features = MLP_out_features
         # TODO: MLP per inquinante
-        self.regressors = [ Mlp(self.encoder.embedding_size, 
+        self.regressors = nn.ModuleList([Mlp(self.encoder.embedding_size, 
                                 hidden_features= [self.MLP_hidden_features, self.MLP_hidden_features//2] , 
                                 out_features = 1 , 
                                 act_layer= nn.PReLU) 
-                                    for _ in range(self.MLP_out_features) ]
+                                    for _ in range(self.MLP_out_features)])
         
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         for regressor in self.regressors:

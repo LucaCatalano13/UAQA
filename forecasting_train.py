@@ -103,23 +103,19 @@ if __name__ == "__main__":
     
     kwargs_model = {"encoder_config": kwargs_encoder, "decoder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
                     "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": True}
-
+    
+    prestoMLM = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path, **kwargs_model)
+    encoder = prestoMLM.encoder
+    kwargs_model_forecasting = {"encoder": encoder, "normalized": True, "MLP_hidden_features" : args.MLP_hidden_features, "MLP_out_features" : args.MLP_out_features }
+    
     #Load or initialize a Forecastinf model based on Presto Encoder
     if args.model_presto_forecasting_path is not None:
         #Checkpoint init
-        kwargs_model_forecasting = {"encoder_config": kwargs_encoder, "normalized": True, "MLP_hidden_features" : args.MLP_hidden_features, "MLP_out_features" : args.MLP_out_features }
         presto_forecasting = PrestoForecasting.load_from_checkpoint(args.model_presto_forecasting_path, **kwargs_model_forecasting)
-        for i in presto_forecasting.parameters():
-            print(i)
-        for param_tensor in presto_forecasting.state_dict():
-            print(param_tensor, "\t", presto_forecasting.state_dict()[param_tensor].size())
     else:
         #Random Xavier initialization
-        prestoMLM = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path, **kwargs_model)
-        encoder = prestoMLM.encoder
-        kwargs_model_forecasting = {"encoder": encoder, "encoder_config": kwargs_encoder, "normalized": True, "MLP_hidden_features" : args.MLP_hidden_features, "MLP_out_features" : args.MLP_out_features }
         presto_forecasting = PrestoForecasting(**kwargs_model_forecasting)
-    
+    print(presto_forecasting.state_dict().keys())
     wandb_logger = WandbLogger(project=args.wandb_project,
                             name=args.wandb_name,
                             log_model='all')
