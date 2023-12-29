@@ -137,8 +137,8 @@ class PrestoForecasting(pl.LightningModule):
     
     def log_metrics(self , y_pred, y_true, loss_factor, str_step):
         for i, pollutant in enumerate(STATIONS_BANDS):
-            mae = loss_factor[:][i] * torch.abs( y_pred[:][i] - y_true[:][i])
-            batch_avg_mae = torch.sum( mae ) / torch.sum(loss_factor[:][i])
-            batch_avg_percentage_error = (torch.sum( (mae/y_true[:][i])  ) / torch.sum(loss_factor[:][i])) * 100
+            mae = loss_factor[:][i] * torch.abs(y_pred[:][i] - y_true[:][i])
+            batch_avg_mae = torch.mean(mae)
+            batch_avg_percentage_error = torch.mean(mae/y_true[:][i])* 100
             self.log(f'{str_step}: MAE of {pollutant}', batch_avg_mae, logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f'{str_step}: % error of {pollutant}', batch_avg_percentage_error, logger=True, prog_bar=True, on_step=False, on_epoch=True)
