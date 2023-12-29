@@ -96,6 +96,7 @@ class PrestoForecasting(pl.LightningModule):
             x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
+        print(y_pred.shape, x.shape)
         loss = self.loss_function(y_pred, y_true, loss_factor)
 
         self.log_metrics(y_pred, y_true, loss_factor, "TRAIN")
