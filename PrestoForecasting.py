@@ -84,7 +84,7 @@ class PrestoForecasting(pl.LightningModule):
     def forward(self, x, latlons, hard_mask = None, day_of_year = 0, day_of_week = 0):        
         x = self.encoder(x = x, mask = hard_mask, latlons = latlons, 
                         day_of_year = day_of_year, day_of_week = day_of_week)
-        y_pred = [regressor(x) for regressor in self.regressors]
+        y_pred = torch.cat([regressor(x) for regressor in self.regressors])
         return y_pred
 
     def training_step(self, batch, batch_idx):
