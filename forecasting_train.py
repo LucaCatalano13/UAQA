@@ -109,6 +109,8 @@ if __name__ == "__main__":
         #Checkpoint init
         kwargs_model_forecasting = {"encoder_config": kwargs_encoder, "normalized": True, "MLP_hidden_features" : args.MLP_hidden_features, "MLP_out_features" : args.MLP_out_features }
         presto_forecasting = PrestoForecasting.load_from_checkpoint(args.model_presto_forecasting_path, **kwargs_model_forecasting)
+        for param_tensor in presto_forecasting.state_dict():
+            print(param_tensor, "\t", presto_forecasting.state_dict()[param_tensor].size())
     else:
         #Random Xavier initialization
         prestoMLM = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path, **kwargs_model)
