@@ -25,7 +25,7 @@ class PixelTimeSeriesLabeled(PixelTimeSeries):
         arrays, hard_mask, latlons, day_of_year, day_of_week = super().__getitem__(index)
         latlon = self.data[2][0, row_ix, col_ix, :]
 
-        if end_t < len(self.stations.files_temporal_aligned): 
+        if (end_t + 1) < len(self.stations.files_temporal_aligned): 
             date = self.data[3][end_t + 1, row_ix, col_ix]
             label , loss_factor = self.stations.get_item_temporal_aligned(end_t + 1, row_ix , col_ix, date, latlon)
         else:
