@@ -55,9 +55,9 @@ class Stations(ADSP_Dataset):
         # retrieve and open the .tiff file
         file = self.files_temporal_aligned[time_index]
         #if original dataset has no data for that index
-        if time_index in self.index_temporal_aligned:
-            #TODO: fill with which value?
-            return np.full(len(STATIONS_BANDS), np.nan)
+        # if time_index in self.index_temporal_aligned:
+        #     #TODO: fill with which value?
+        #     return np.full(len(STATIONS_BANDS), np.nan)
         #otherwise open the real data
         raster = rasterio.open(file)
         # transform the raster into a numpy array
@@ -127,6 +127,11 @@ class GoldStation():
         distances = {}
         label = {}
         for band in STATIONS_BANDS:
+            #TODO: initialize with mean of the band each label
+            distances[band] = np.inf
+            label[band] = np.nan
+
+        for band in STATIONS_BANDS:
             distances[band] = np.inf
         for i, band in enumerate(STATIONS_BANDS):
             for j, latlon_data in enumerate(list(data_single_date.keys())):
@@ -141,11 +146,7 @@ class GoldStation():
                     a = (math.sin(diff_lat/2))**2 + math.cos(lon1) * math.cos(float(lat2)) * (math.sin(diff_lon/2))**2
                     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
                     dist = R * c
-                    if band in distances.keys():
-                        if dist < distances[band]:
-                            distances[band] = dist
-                            label[band] = data_single_date[latlon_data][band]
-                    else:
+                    if dist < distances[band]:
                         distances[band] = dist
                         label[band] = data_single_date[latlon_data][band]
         return list(distances.values()), list(label.values())

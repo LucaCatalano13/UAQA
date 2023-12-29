@@ -66,20 +66,21 @@ if __name__ == "__main__":
 
     train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42, shuffle=False)
     
+    print("Train Dataloader loading")
     train_dataloader = DataLoader(
             train_dataset,
             batch_size=args.batch_size,
             num_workers=2,
             shuffle=False,
         )
-
+    print("Val Dataloader loading")
     val_dataloader = DataLoader(
             val_dataset,
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             shuffle=False,
         )
-    
+    print("Test Dataloader loading")
     test_dataloader = DataLoader(
             test_dataset,
             batch_size=args.batch_size,

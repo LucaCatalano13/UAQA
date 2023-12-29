@@ -25,7 +25,7 @@ class PixelTimeSeries(Dataset):
         else:
             self.__load_data(input_data_path)
         
-        self.num_slices_per_pixel = int( 1 + np.floor( (self.len_pixel_timeseries() - self.num_timesteps)/self.jump ))
+        self.num_slices_per_pixel = int(1 + np.floor((self.len_pixel_timeseries() - self.num_timesteps)/self.jump))
 
     def __create_data(self, collection_dataset: CollectionDataset, bound: LandCover): 
         self.data =  process_images(collection_dataset, bound)
