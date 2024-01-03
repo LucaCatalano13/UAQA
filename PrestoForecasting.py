@@ -61,8 +61,7 @@ class PrestoForecasting(pl.LightningModule):
                                 act_layer= nn.PReLU) 
                                     for _ in range(self.MLP_out_features)])
         
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        device = torch.device("cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         for regressor in self.regressors:
             regressor.to(device)
         
