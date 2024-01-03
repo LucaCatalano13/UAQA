@@ -74,7 +74,9 @@ class PixelTimeSeries(Dataset):
             "index" : index, 
             "time index" : t_index, 
             "start time index" : start_t, 
-            "end time index" : end_t - 1,
+            "start date" : self.data[3][start_t, row_ix, col_ix],
+            "end time index (considered)" : end_t - 1,
+            "end date (considered)" : self.data[3][end_t - 1, row_ix, col_ix],
             "flat index" : flat_ix, 
             "row index" : row_ix, 
             "column index" : col_ix
