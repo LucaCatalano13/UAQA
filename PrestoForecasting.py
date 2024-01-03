@@ -70,6 +70,7 @@ class PrestoForecasting(pl.LightningModule):
         self.loss_fn = self.configure_loss_function()
         self.optimizer = self.configure_optimizers()
         self.normalized = normalized
+        self.test_step_outputs = []
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
@@ -127,16 +128,25 @@ class PrestoForecasting(pl.LightningModule):
             x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
+        self.test_step_outputs.append((y_pred, y_true))
         # loss = self.loss_function(y_pred, y_true, loss_factor)
         
         # self.log_metrics(y_pred, y_true, loss_factor, "TEST")
         # self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return (y_pred, y_true)
+        return y_pred
     
-    def on_test_epoch_end(self, all):
-        print(all)
+    def on_test_epoch_end(self):
+        loss = 0
+        relative_loss = 0
         print("Questo codice è stato eseguito")
-        # loss = self.loss_function(all[0], all[1])
+        for y_pred, y_true in self.test_step_outputs:
+            with torch.no_grad():
+                # loss_f += torch.sum(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+                loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+                relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+                # relative_loss_f += torch.sum(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda()) / y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+        print("loss: ", loss/len(self.test_step_outputs))
+        print("relative_loss: ", relative_loss/len(self.test_step_outputs))
         # self.log_metrics(all[0] all[1], "TEST")
         # self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
     
