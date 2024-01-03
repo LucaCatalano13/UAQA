@@ -127,12 +127,16 @@ class PrestoForecasting(pl.LightningModule):
             x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
-        loss = self.loss_function(y_pred, y_true, loss_factor)
+        # loss = self.loss_function(y_pred, y_true, loss_factor)
         
-        self.log_metrics(y_pred, y_true, loss_factor, "TEST")
-        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return y_pred
+        # self.log_metrics(y_pred, y_true, loss_factor, "TEST")
+        # self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        return y_pred, y_true
     
+    def test_epoch_end(self, all_y_pred, all_y_true):
+        loss = self.loss_function(all_y_pred, all_y_true)
+        self.log_metrics(all_y_pred, all_y_true, "TEST")
+        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
     
     def log_metrics(self , y_pred, y_true, loss_factor, str_step):
         with torch.no_grad():
