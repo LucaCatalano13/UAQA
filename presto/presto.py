@@ -442,7 +442,6 @@ class Encoder(nn.Module):
             tokens += channel_wise_positional_embedding
             # all tokens has one element (that is tokens) for each channel group
             all_tokens.append(tokens)
-            print(mask.shape)
             group_mask = repeat(
                 torch.max(mask[:, indices, channel_idxs], dim=-1)[0],
                 "b t -> b t d",
