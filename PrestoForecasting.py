@@ -98,8 +98,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
 
-        # self.log_metrics(y_pred, y_true, loss_factor, "TRAIN")
-        
+        self.log_metrics(y_pred, y_true, loss_factor, "TRAIN")
         self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
     
@@ -114,7 +113,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
         
-        # self.log_metrics(y_pred, y_true, loss_factor, "VAL")
+        self.log_metrics(y_pred, y_true, loss_factor, "VAL")
         self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
 
@@ -130,7 +129,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
         
-        # self.log_metrics(y_pred, y_true, loss_factor, "TEST")
+        self.log_metrics(y_pred, y_true, loss_factor, "TEST")
         self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
     
@@ -142,14 +141,15 @@ class PrestoForecasting(pl.LightningModule):
         #     batch_avg_percentage_error = torch.mean(mae/y_true[:][i])* 100
         #     self.log(f'{str_step}: MAE of {pollutant}', batch_avg_mae, logger=True, prog_bar=True, on_step=False, on_epoch=True)
         #     self.log(f'{str_step}: % error of {pollutant}', batch_avg_percentage_error, logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        loss_f = torch.mean(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda())), axis=0)
-        loss = torch.mean(torch.abs((y_pred - y_true.cuda())), axis=0)
-        for i, pollutant in enumerate(STATIONS_BANDS):
-            self.log(f'MAE with loss factor of {pollutant}', loss_f[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
-            self.log(f'MAE of {pollutant}', loss[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        relative_loss_f = torch.mean(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda()))/y_true.cuda(), axis=0)
-        relative_loss = torch.mean(torch.abs((y_pred - y_true.cuda()))/y_true.cuda(), axis=0)
-        for i, pollutant in enumerate(STATIONS_BANDS):
-            self.log(f'Relative MAE with loss factor of {pollutant}', relative_loss_f[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
-            self.log(f'Relative MAE of {pollutant}', relative_loss[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        
+        with torch.no_grad():
+            loss_f = torch.mean(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda())), axis=0)
+            loss = torch.mean(torch.abs((y_pred - y_true.cuda())), axis=0)
+            for i, pollutant in enumerate(STATIONS_BANDS):
+                self.log(f'MAE with loss factor of {pollutant}', loss_f[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+                self.log(f'MAE of {pollutant}', loss[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+            relative_loss_f = torch.mean(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda()))/y_true.cuda(), axis=0)
+            relative_loss = torch.mean(torch.abs((y_pred - y_true.cuda()))/y_true.cuda(), axis=0)
+            for i, pollutant in enumerate(STATIONS_BANDS):
+                self.log(f'Relative MAE with loss factor of {pollutant}', relative_loss_f[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+                self.log(f'Relative MAE of {pollutant}', relative_loss[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+            
