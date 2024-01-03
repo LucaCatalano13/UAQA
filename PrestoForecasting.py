@@ -98,7 +98,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
 
-        self.log_metrics(y_pred, y_true, loss_factor, "TRAIN")
+        # self.log_metrics(y_pred, y_true, loss_factor, "TRAIN")
         
         self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
@@ -114,7 +114,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
         
-        self.log_metrics(y_pred, y_true, loss_factor, "VAL")
+        # self.log_metrics(y_pred, y_true, loss_factor, "VAL")
         self.log('val_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
 
@@ -130,7 +130,7 @@ class PrestoForecasting(pl.LightningModule):
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
         
-        self.log_metrics(y_pred, y_true, loss_factor, "TEST")
+        # self.log_metrics(y_pred, y_true, loss_factor, "TEST")
         self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return y_pred
     
