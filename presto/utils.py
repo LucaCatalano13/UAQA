@@ -22,7 +22,8 @@ logger.info("Using data dir: %s" % data_dir)
 
 config_dir = Path(__file__).parent.parent / "config"
 default_model_path = data_dir / "default_model.pt"
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 DEFAULT_SEED: int = 42
 
 # From https://gist.github.com/ihoromi4/b681a9088f348942b01711f251e5f964

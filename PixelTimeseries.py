@@ -78,7 +78,7 @@ class PixelTimeSeries(Dataset):
             "end time index (considered)" : end_t - 1,
             "end date (considered)" : self.data[3][end_t - 1, row_ix, col_ix],
             "flat index" : flat_ix, 
-            "row index" : row_ix, 
+            "row index" : row_ix,
             "column index" : col_ix
         }
         return res

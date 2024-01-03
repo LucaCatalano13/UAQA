@@ -115,7 +115,7 @@ if __name__ == "__main__":
     else:
         #Random Xavier initialization
         presto_forecasting = PrestoForecasting(**kwargs_model_forecasting)
-    print(presto_forecasting.state_dict().keys())
+        
     wandb_logger = WandbLogger(project=args.wandb_project,
                             name=args.wandb_name,
                             log_model='all')
