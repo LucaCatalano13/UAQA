@@ -131,13 +131,14 @@ class PrestoForecasting(pl.LightningModule):
         
         # self.log_metrics(y_pred, y_true, loss_factor, "TEST")
         # self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-        return y_pred, y_true
+        return (y_pred, y_true)
     
-    def on_test_epoch_end(self, all_y_pred, all_y_true):
+    def on_test_epoch_end(self, all):
+        print(all)
         print("Questo codice è stato eseguito")
-        loss = self.loss_function(all_y_pred, all_y_true)
-        self.log_metrics(all_y_pred, all_y_true, "TEST")
-        self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+        # loss = self.loss_function(all[0], all[1])
+        # self.log_metrics(all[0] all[1], "TEST")
+        # self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
     
     def log_metrics(self , y_pred, y_true, loss_factor, str_step):
         with torch.no_grad():
