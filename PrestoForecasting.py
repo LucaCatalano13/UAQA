@@ -157,4 +157,4 @@ class PrestoForecasting(pl.LightningModule):
         print(y_pred[0], y_true[0], loss_value[0])
         loss_value = torch.mean(loss_value, axis=0)
         for i, pollutant in enumerate(STATIONS_BANDS):
-            self.log(f'MAE of {pollutant}', loss_value[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+            print(f'*****MAE of {pollutant}', loss_value[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
