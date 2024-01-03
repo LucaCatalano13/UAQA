@@ -134,6 +134,7 @@ class PrestoForecasting(pl.LightningModule):
         return y_pred, y_true
     
     def test_epoch_end(self, all_y_pred, all_y_true):
+        print("Questo codice è stato eseguito")
         loss = self.loss_function(all_y_pred, all_y_true)
         self.log_metrics(all_y_pred, all_y_true, "TEST")
         self.log('test_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
