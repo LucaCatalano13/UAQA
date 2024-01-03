@@ -139,7 +139,7 @@ class PrestoForecasting(pl.LightningModule):
         loss = 0
         relative_loss = 0
         minimo = 1000
-        print("Questo codice è stato eseguito")
+        print("Questo codice è stato eseguito", len(self.test_step_outputs))
         for y_pred, y_true in self.test_step_outputs:
             with torch.no_grad():
                 # loss_f += torch.sum(loss_factor.cuda() * torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
