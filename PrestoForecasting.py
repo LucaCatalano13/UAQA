@@ -27,12 +27,15 @@ class Mlp(nn.Module):
 
         self.fc1 = nn.Linear(in_features, hidden_features[0], bias=bias)
         self.act1 = act_layer(num_parameters=hidden_features[0])
-        # self.drop1 = nn.Dropout(drop)
+        self.drop1 = nn.Dropout(drop)
         
         self.fc2 = nn.Linear(hidden_features[0], hidden_features[1], bias=bias)
         self.act2 = act_layer(num_parameters=hidden_features[1])
-        
-        self.fc3 = nn.Linear(hidden_features[1], out_features, bias = bias)
+
+        self.fc3 = nn.Linear(hidden_features[1], hidden_features[2], bias = bias)
+        self.act3 = act_layer(num_parameters=hidden_features[2])
+        self.fc4 = nn.Linear(hidden_features[2], out_features, bias = bias)
+
         # self.drop2 = nn.Dropout(drop)
 
     def forward(self, x):
@@ -43,6 +46,8 @@ class Mlp(nn.Module):
         x = self.act2(x)
         # x = self.drop2(x)
         x = self.fc3(x)
+        x = self.act3(x)
+        x = self.fc4(x)
         return x
 
 
@@ -56,7 +61,8 @@ class PrestoForecasting(pl.LightningModule):
         self.MLP_out_features = MLP_out_features
         # TODO: MLP per inquinante
         self.regressors = nn.ModuleList([Mlp(self.encoder.embedding_size, 
-                                hidden_features= [self.MLP_hidden_features, self.MLP_hidden_features//2] , 
+                                hidden_features= [self.MLP_hidden_features, self.MLP_hidden_features//2, self.MLP_hidden_features//4] , 
+                                # hidden_features= [self.MLP_hidden_features],
                                 out_features = 1 , 
                                 act_layer= nn.PReLU) 
                                     for _ in range(self.MLP_out_features)])
