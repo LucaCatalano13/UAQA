@@ -39,11 +39,6 @@ LC_MAP_DICT_CLASSES = {1:1, 2:1, 3:1, 4:1, 5:1, 6:1, 7:1, 8:2, 9:2, 10:3, 11:4, 
 
 LC_BANDS = ['Urban', 'Road', 'Railways', 'Port', 'Airports', 'Extraction', 'NoUse', 'Green', 'OpenSpaces', 'Water']
 
-LC_SHIFT_VALUES = [0.0]
-
-LC_DIV_VALUES = [2000.0]
-
-
 class LandCover(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str, old_new_classes_dict = LC_MAP_DICT_CLASSES):
       super().__init__(dataset_folder, legend_folder, LC_BANDS)

@@ -30,6 +30,20 @@ class PixelTimeSeries(Dataset):
     def __create_data(self, collection_dataset: CollectionDataset, bound: LandCover): 
         self.data =  process_images(collection_dataset, bound)
     
+    def normalize_data(self):
+        """
+        Normalize measurements arrays in PixelTimeseries object
+        """
+        arrays = self.data[0]
+        hard_mask = self.data[1]
+        num_bands = arrays.shape[-1]
+        num_timesteps = arrays.shape[0]
+        # normalize arrays
+        mean_bands = arrays[~hard_mask.bool()].mean(axis = 0)
+        std_bands = arrays[~hard_mask.bool()].std(axis = 0)
+        arrays = (arrays - mean_bands) / std_bands
+        self.data = (arrays, *self.data[1:])
+
     def save_data(self, input_data_path_save): 
         torch.save(self.data, input_data_path_save)
     

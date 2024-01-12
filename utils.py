@@ -17,12 +17,6 @@ from datasets.Era5 import ERA5_BANDS
 from datasets.CollectionDataset import BANDS, REMOVE_BANDS, ADD_BY, DIVIDE_BY
 from datasets.dataset_utils import FINAL_H, FINAL_W
 
-def normalize(cls, x):
-  if isinstance(x, np.ndarray):
-    x = ((x + ADD_BY) / DIVIDE_BY).astype(np.float32)
-  else:
-    x = (x + torch.tensor(ADD_BY)) / torch.tensor(DIVIDE_BY)
-  return x
 
 def construct_single_presto_input(
     era5: Optional[torch.Tensor] = None,
@@ -34,8 +28,7 @@ def construct_single_presto_input(
     s3: Optional[torch.Tensor] = None,
     s3_bands: Optional[List[str]] = None,
     s5: Optional[torch.Tensor] = None,
-    s5_bands: Optional[List[str]] = None,
-    normalize: bool = False):
+    s5_bands: Optional[List[str]] = None):
 
     '''
     Constructin single presto input
@@ -78,8 +71,6 @@ def construct_single_presto_input(
     # set the mask to 1 if the data is nan
     hard_mask[x.isnan()] = 1
 
-    if normalize:
-        x = normalize(x)
     return x, hard_mask
 
 def get_city_grids(bounds, radius=500):

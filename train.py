@@ -32,7 +32,10 @@ if __name__ == "__main__":
                                                      sentinel5 = train_sentinel5, land_cover = train_land_cover)
         train_bound = train_land_cover.get_bound()
         train_dataset = PixelTimeSeries(num_timesteps=args.num_timesteps, collection_dataset=train_collection_dataset, bound=train_bound, jump=args.jump)
-        
+    
+    # Normalize data
+    train_dataset.normalize_data()
+
     if args.input_test_path is not None:
         test_dataset = PixelTimeSeries(num_timesteps=args.num_timesteps, jump=args.jump, input_data_path = args.input_test_path)
     else:
@@ -44,9 +47,10 @@ if __name__ == "__main__":
         test_collection_dataset = CollectionDataset(era = test_era, dem = test_dem, sentinel3 = test_sentinel3, 
                                                      sentinel5 = test_sentinel5, test_cover = test_land_cover)
         test_bound = test_land_cover.get_bound()
-        test_dataset = PixelTimeSeries(num_timesteps=args.num_timesteps, collection_dataset=test_collection_dataset, bound=test_bound, jump=args.jump)
+        test_dataset = PixelTimeSeries(num_timesteps=args.num_timesteps, collection_dataset=test_collection_dataset, bound=test_bound, jump=args.jump)    
     
-    # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
+    # Normalize data
+    test_dataset.normalize_data()
 
     train_dataset, val_dataset = train_test_split(train_dataset, test_size=0.2, random_state=42, shuffle=False)
     
@@ -80,7 +84,7 @@ if __name__ == "__main__":
                   "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
     
     kwargs_model = {"encoder_config": kwargs_encoder, "decoder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
-                    "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": True}
+                    "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": False}
     
 
     if args.model_presto_path is not None:

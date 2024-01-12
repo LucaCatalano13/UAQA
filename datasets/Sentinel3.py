@@ -5,10 +5,6 @@ from datasets.ADSP_Dataset import ADSP_Dataset
 
 S3_BANDS = ['F1', 'F2', 'S7', 'S8', 'S9']
 
-S3_SHIFT_VALUES = [25.0] * len(S3_BANDS)
-
-S3_DIV_VALUES = [25.0] * len(S3_BANDS)
-
 class Sentinel3(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
       super().__init__(dataset_folder , legend_folder, S3_BANDS)

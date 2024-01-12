@@ -27,6 +27,7 @@ if __name__ == "__main__":
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
         print("Loaded Train Stations")
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps=  args.num_timesteps, jump=args.jump, input_data_path = args.input_train_path)
+    
     else:
         train_era = Era5(dataset_folder = args.era5_path, legend_folder = args.era5_legend_path)
         train_dem = Dem(dataset_folder = args.dem_path, legend_folder = args.dem_legend_path)
@@ -40,8 +41,10 @@ if __name__ == "__main__":
         train_stations = Stations(dataset_folder = args.stations_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_path, gold_legend_path = args.golden_stations_legend_path)
         print("Loaded Train Stations")
         train_dataset = PixelTimeSeriesLabeled(stations = train_stations, num_timesteps= args.num_timesteps,  jump=args.jump, collection_dataset=train_collection_dataset, bound=train_bound)
-        
-        
+    
+    # Normalize data
+    train_dataset.normalize_data()
+
     if args.input_test_path is not None:
         print("Loading Test Stations")
         test_stations = Stations(dataset_folder = args.stations_test_path, legend_folder = args.stations_legend_path, gold_data_path = args.golden_stations_test_path, gold_legend_path = args.golden_stations_legend_path)
@@ -61,6 +64,9 @@ if __name__ == "__main__":
         print("Loaded Test Stations")
         test_dataset = PixelTimeSeriesLabeled(stations = test_stations, num_timesteps= args.num_timesteps, jump=args.jump, collection_dataset=test_collection_dataset, bound=test_bound)
     
+    # Normalize data
+    test_dataset.normalize_data()
+
     print("End dataset loading")
     if not args.only_test:
         # train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [int(len(train_dataset)*0.8), int(len(train_dataset)*0.2)])
@@ -81,6 +87,7 @@ if __name__ == "__main__":
                 num_workers=args.num_workers,
                 shuffle=False,
             )
+    
     print("Test Dataloader loading")
     test_dataloader = DataLoader(
             test_dataset,
@@ -102,7 +109,7 @@ if __name__ == "__main__":
                   "mlp_ratio": args.decoder_mlp_ratio, "max_sequence_length": args.decoder_max_sequence_length}
     
     kwargs_model = {"encoder_config": kwargs_encoder, "decoder_config": kwargs_decoder, "mask_ratio_random": args.mask_ratio_random, "mask_ratio_bands": args.mask_ratio_bands, 
-                    "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": True}
+                    "mask_ratio_timesteps": args.mask_ratio_timesteps, "normalized": False}
     
     prestoMLM = PrestoMaskedLanguageModel.load_from_checkpoint(args.model_presto_path, **kwargs_model)
     encoder = prestoMLM.encoder
@@ -110,10 +117,10 @@ if __name__ == "__main__":
     
     #Load or initialize a Forecastinf model based on Presto Encoder
     if args.model_presto_forecasting_path is not None:
-        #Checkpoint init
+        # Checkpoint init
         presto_forecasting = PrestoForecasting.load_from_checkpoint(args.model_presto_forecasting_path, **kwargs_model_forecasting)
     else:
-        #Random Xavier initialization
+        # Random Xavier initialization
         presto_forecasting = PrestoForecasting(**kwargs_model_forecasting)
         
     wandb_logger = WandbLogger(project=args.wandb_project,

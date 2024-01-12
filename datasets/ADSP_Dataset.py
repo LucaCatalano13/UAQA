@@ -36,16 +36,6 @@ class ADSP_Dataset (Dataset):
     def get_bands(self):
         return self.bands
     
-    # def get_item_temporal_aligned(self, index):
-    #     assert self.files_temporal_aligned is not None
-    #     # retrieve and open the .tiff file
-    #     file = self.files_temporal_aligned[index]
-    #     #TODO with statemant --> perform
-    #     raster = rasterio.open(file)
-    #     # transform the raster into a numpy array
-    #     raster_data = raster.read()
-    #     return self.transform(raster_data)
-
     def get_item_temporal_aligned(self, index):
         assert self.files_temporal_aligned is not None
         # retrieve and open the .tiff file
@@ -108,15 +98,6 @@ class ADSP_Dataset (Dataset):
             print("Min: ", band.min())
             print("Max: ", band.max())
             show((raster, i+1))
-
-    def get_resolutions_in_m(self) -> tuple():
-        pixel_width_degrees, pixel_height_degrees = self.resolution
-        # Conversion factors
-        lat_conversion_factor = 111 # Approximate value for latitude in km per degree
-        # Calculate approximate pixel dimensions in meters
-        pixel_width_meters = pixel_width_degrees * lat_conversion_factor * 1000
-        pixel_height_meters = pixel_height_degrees * lat_conversion_factor * 1000
-        return pixel_width_meters, pixel_height_meters
 
     def __get_all_mean_per_bands(self):
         dataset_bands = self.shape_resized_raster[0]

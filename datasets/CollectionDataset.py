@@ -4,36 +4,17 @@ from collections import OrderedDict
 from typing import OrderedDict as OrderedDictType
 from typing import List
 
-from .Dem import DEM_BANDS, DEM_SHIFT_VALUES, DEM_DIV_VALUES
-from .LandCover import LC_BANDS, LC_SHIFT_VALUES, LC_DIV_VALUES
-from .Sentinel3 import S3_BANDS, S3_SHIFT_VALUES, S3_DIV_VALUES
-from .Sentinel5 import S5_BANDS, S5_SHIFT_VALUES, S5_DIV_VALUES
-from .Era5 import ERA5_BANDS, ERA5_SHIFT_VALUES, ERA5_DIV_VALUES
+from .Dem import DEM_BANDS
+from .LandCover import LC_BANDS
+from .Sentinel3 import S3_BANDS
+from .Sentinel5 import S5_BANDS
+from .Era5 import ERA5_BANDS
 
 DYNAMIC_BANDS = S3_BANDS + S5_BANDS + ERA5_BANDS
 STATIC_BANDS = DEM_BANDS + LC_BANDS
 RAW_BANDS = DYNAMIC_BANDS + STATIC_BANDS
 REMOVE_BANDS = []
 BANDS = [ band for band in RAW_BANDS if band not in REMOVE_BANDS]
-
-
-DYNAMIC_BANDS_SHIFT = S3_SHIFT_VALUES + S5_SHIFT_VALUES + ERA5_SHIFT_VALUES
-DYNAMIC_BANDS_DIV = S3_DIV_VALUES + S5_DIV_VALUES + ERA5_DIV_VALUES
-
-STATIC_BANDS_SHIFT = LC_SHIFT_VALUES + DEM_SHIFT_VALUES
-STATIC_BANDS_DIV = LC_DIV_VALUES + DEM_DIV_VALUES
-
-ADD_BY = (
-    [DYNAMIC_BANDS_SHIFT[i] for i, x in enumerate(DYNAMIC_BANDS) if x not in REMOVE_BANDS]
-    + STATIC_BANDS_SHIFT
-    + [0.0]
-)
-DIVIDE_BY = (
-    [DYNAMIC_BANDS_DIV[i] for i, x in enumerate(DYNAMIC_BANDS) if x not in REMOVE_BANDS]
-    + STATIC_BANDS_DIV
-    + [1.0]
-)
-
 
 NORMED_BANDS = [x for x in BANDS]
 NUM_BANDS = len(NORMED_BANDS)

@@ -25,9 +25,6 @@ ERA5_BANDS = ['u100',
  'sp',
  'tp']
 
-ERA5_SHIFT_VALUES = [-272.15] * len(ERA5_BANDS)
-
-ERA5_DIV_VALUES = [35.0] * len(ERA5_BANDS)
 
 class Era5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):

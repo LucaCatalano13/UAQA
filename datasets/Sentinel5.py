@@ -15,10 +15,6 @@ S5_BANDS = ['CH4',
  'AER_AI_340_380',
  'AER_AI_354_388']
 
-S5_SHIFT_VALUES = [float(0.0)] * len(S5_BANDS)
-
-S5_DIV_VALUES = [float(1e4)] * len(S5_BANDS)
-
 class Sentinel5(ADSP_Dataset):
     def __init__(self, dataset_folder: str, legend_folder: str):
       super().__init__(dataset_folder , legend_folder, S5_BANDS)
