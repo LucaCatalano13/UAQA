@@ -3,12 +3,6 @@ import numpy as np
 from torch import nn
 from torch.nn import functional as F
 import pytorch_lightning as pl
-from einops import repeat
-import math
-
-from presto.presto import Encoder, Decoder, Presto
-from random import choice, randint, random, sample
-from datasets.CollectionDataset import BANDS, BANDS_GROUPS_IDX, BAND_EXPANSION
 from datasets.Stations import STATIONS_BANDS
 
 class Mlp(nn.Module):

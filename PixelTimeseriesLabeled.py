@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from datasets.CollectionDataset import CollectionDataset
 from datasets.LandCover import LandCover
 from datasets.Stations import Stations

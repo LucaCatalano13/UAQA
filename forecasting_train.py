@@ -1,10 +1,7 @@
-import torch
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from tqdm import tqdm
 from sklearn.model_selection import train_test_split
-import wandb
 from pytorch_lightning.loggers import WandbLogger
 
 from datasets.Era5 import Era5

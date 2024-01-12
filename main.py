@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from datasets.Era5 import Era5
@@ -8,7 +8,6 @@ from datasets.Sentinel3 import Sentinel3
 from datasets.Sentinel5 import Sentinel5
 from datasets.LandCover import LandCover
 from datasets.CollectionDataset import CollectionDataset
-from utils import process_images, get_day_of_year_and_day_of_week
 import parser
 
 from presto.presto import Encoder, Decoder, Presto

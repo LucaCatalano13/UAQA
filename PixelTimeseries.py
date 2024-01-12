@@ -1,9 +1,5 @@
 import numpy as np
 import torch
-from functools import reduce
-from collections import OrderedDict
-from typing import OrderedDict as OrderedDictType
-from typing import List
 from torch.utils.data import Dataset
 
 from datasets.dataset_utils import FINAL_H, FINAL_W

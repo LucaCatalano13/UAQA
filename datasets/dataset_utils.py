@@ -1,8 +1,4 @@
 import numpy as np
-import torch
-from pyproj import Transformer, CRS
-from typing import List, Optional
-from tqdm import tqdm
 
 FINAL_H = 18
 FINAL_W = 18
