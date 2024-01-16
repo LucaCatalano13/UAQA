@@ -91,11 +91,6 @@ class PrestoForecasting(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
@@ -106,11 +101,6 @@ class PrestoForecasting(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor= batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(y_pred, y_true, loss_factor)
@@ -122,11 +112,6 @@ class PrestoForecasting(pl.LightningModule):
     #TODO: solo gold stations?
     def test_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         self.test_step_outputs.append((y_pred, y_true))

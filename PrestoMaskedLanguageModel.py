@@ -120,7 +120,7 @@ def make_mask(x, hard_mask, strategy: str, mask_ratio_random: float, mask_ratio_
     return mask
 
 class PrestoMaskedLanguageModel(pl.LightningModule):
-    def __init__(self, encoder_config, decoder_config, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM, normalized = False, ):
+    def __init__(self, encoder_config, decoder_config, mask_ratio_random, mask_ratio_timesteps, mask_ratio_bands, bands_not_to_mask = BANDS_NOT_TO_TRAIN_ON_MLM, normalized = False):
         super().__init__()
         self.lr = 0.001
         self.encoder = Encoder(**encoder_config)
@@ -150,11 +150,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # define soft mask
         soft_mask = make_mask(x=x, hard_mask = hard_mask, strategy = MASK_STRATEGIES[randint(0, len(MASK_STRATEGIES) - 1)], 
                               mask_ratio_random = self.mask_ratio_random, mask_ratio_bands = self.mask_ratio_bands, 
@@ -175,11 +170,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # forward
         reconstructed_x = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
@@ -188,11 +178,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, hard_mask, latlons, day_of_year, day_of_week = batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         # forward
         reconstructed_x = self(x, latlons, hard_mask, day_of_year, day_of_week)
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
@@ -201,11 +186,6 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
 
     def inference_epoch_end(self, outputs, inference_batch):
         x, hard_mask, latlons, day_of_year, day_of_week = inference_batch
-        if self.normalized:
-            # Normalized values        
-            mean_values = x.mean(dim=(0, 1), keepdim=True)
-            std_values = x.std(dim=(0, 1), unbiased=False, keepdim=True)
-            x = (x - mean_values) / (std_values + 1e-05)
         reconstructed_x = outputs
         # evaluate validation and test with the loss of the all values in dataset
         loss = self.loss_function(reconstructed_x[~hard_mask.bool()], x[~hard_mask.bool()])
