@@ -92,11 +92,12 @@ class CollectionDataset():
     era = self.era.get_item_temporal_aligned(index)
     s3 = self.sentinel3.get_item_temporal_aligned(index)
     s5 = self.sentinel5.get_item_temporal_aligned(index)
+    date = self.aligned_dates[index]
+    
     # static
     lc = self.land_cover[0]
     dem = self.dem[0]
-    date = self.aligned_dates[index]
-    
+
     #if index not in self.sentinel3.index_temporal_aligned:
     #  date = self.sentinel3.files_temporal_aligned[index].split('/')[4].split('T')[0]
     #else:
