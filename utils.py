@@ -88,6 +88,7 @@ def get_city_grids(bounds, radius=500):
     ix_x = 0
     while x < x_max:
         y = y_min+radius/2
+        # TODO: different origins, y is inverted. Must start from FINAL_H - 1 and go to 0 
         ix_y = 0
         while y < y_max:
             new_point = Point(x, y)
