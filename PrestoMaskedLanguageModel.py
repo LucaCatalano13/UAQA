@@ -159,11 +159,11 @@ class PrestoMaskedLanguageModel(pl.LightningModule):
         # mask x
         # soft_hard_mask = torch.logical_or(soft_mask.cpu().bool(), hard_mask.cpu().bool())
         # label = masked_x
-        labels = torch.Tensor(x[soft_mask])
+        labels = torch.Tensor(x[soft_mask_separated])
         # forward
         reconstructed_x = self(x, latlons, soft_mask_separated, day_of_year, day_of_week)
         # compute loss between reconstructed_masked_x (of the masked positions) and masked_x (label)
-        reconstructed_masked_x = reconstructed_x[soft_mask]
+        reconstructed_masked_x = reconstructed_x[soft_mask_separated]
         loss = self.loss_function(reconstructed_masked_x, labels)
         self.log('train_loss', loss.item(), logger=True, prog_bar=True, on_step=False, on_epoch=True)
         return {"loss": loss}
