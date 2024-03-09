@@ -50,11 +50,11 @@ class Era5(ADSP_Dataset):
         show((raster, i+1))
         
     def get_mean_per_bands(self):
-      return self.__get_all_mean_per_bands()
+      return self.get_all_mean_per_bands()
     
     def from_file_path_to_date(self, string):
       return string.split('/')[4].split('.')[0]
     
     def __get_len_with_mask_raster(self):
-      return (len(self.bands) + 1, FINAL_H, FINAL_W)
+      return (len(self.bands), FINAL_H, FINAL_W)
     

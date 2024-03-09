@@ -35,7 +35,7 @@ class Sentinel5(ADSP_Dataset):
       return np.array(new_raster_data)
     
     def get_mean_per_bands(self):
-      all_mean_per_bands = self.__get_all_mean_per_bands()
+      all_mean_per_bands = self.get_all_mean_per_bands()
       return all_mean_per_bands[::2]
     
     def from_file_path_to_date(self, string):
