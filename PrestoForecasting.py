@@ -121,7 +121,6 @@ class PrestoForecasting(pl.LightningModule):
             a = np.ndarray((len(STATIONS_BANDS)))
             b = np.ndarray(len(STATIONS_BANDS))
             for i in range(len(STATIONS_BANDS)):
-                print(b, i, loss_factor.shape, loss_factor[batch_, i])
                 if loss_factor[batch_, i] == 1:
                     a[i] = float(y_pred[b, i])
                     b[i] = float(y_true[b, i])
