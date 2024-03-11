@@ -114,23 +114,23 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
 
-        yy_pred = np.ndarray((len(batch), len(STATIONS_BANDS)))
-        yy_true = np.ndarray((len(batch), len(STATIONS_BANDS)))
-        print(len(batch))
-        for batch_ in range(len(batch)):
-            a = np.ndarray((len(STATIONS_BANDS)))
-            b = np.ndarray(len(STATIONS_BANDS))
-            for i in range(len(STATIONS_BANDS)):
-                if loss_factor[batch_, i] == 1:
-                    a[i] = float(y_pred[b, i])
-                    b[i] = float(y_true[b, i])
-                else:
-                    a[i] = np.nan
-                    b[i] = np.nan
-            yy_pred[batch_] = a
-            yy_true[batch_] = b
-        print("**", torch.Tensor(yy_pred).shape)
-        self.test_step_outputs.append((torch.Tensor(yy_pred), torch.Tensor(yy_true)))
+        # yy_pred = np.ndarray((len(batch), len(STATIONS_BANDS)))
+        # yy_true = np.ndarray((len(batch), len(STATIONS_BANDS)))
+        # for batch_ in range(len(batch)):
+        #     a = np.ndarray((len(STATIONS_BANDS)))
+        #     b = np.ndarray(len(STATIONS_BANDS))
+        #     for i in range(len(STATIONS_BANDS)):
+        #         if loss_factor[batch_, i] == 1:
+        #             a[i] = float(y_pred[b, i])
+        #             b[i] = float(y_true[b, i])
+        #         else:
+        #             a[i] = np.nan
+        #             b[i] = np.nan
+        #     yy_pred[batch_] = a
+        #     yy_true[batch_] = b
+        # print("**", torch.Tensor(yy_pred).shape)
+        print(y_pred.shape, y_true.shape)
+        self.test_step_outputs.append((torch.Tensor(y_pred), torch.Tensor(y_true)))
         return y_pred
     
     def on_test_epoch_end(self):
