@@ -154,6 +154,7 @@ class PrestoForecasting(pl.LightningModule):
         n = 0
         for i, pollutant in enumerate(STATIONS_BANDS):
             for y_pred, y_true, loss_factor in self.test_step_outputs:
+                print(loss_factor[i])
                 if loss_factor[i] >= 1:
                     print(y_pred[i], y_true[i], y_pred[i] - y_true[i])
                     sum += torch.abs((y_pred[i] - y_true[i].cuda()))
