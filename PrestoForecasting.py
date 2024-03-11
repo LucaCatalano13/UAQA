@@ -137,7 +137,6 @@ class PrestoForecasting(pl.LightningModule):
         # print("**", torch.Tensor(yy_pred).shape)
         self.test_step_outputs.append((torch.Tensor(y_pred), torch.Tensor(y_true)))
         self.non_nan_counts += (y_pred.size(0) - torch.sum(mask, dim=0)).cpu()
-        print(self.non_nan_counts.shape)
         return y_pred
     
     # def on_test_epoch_end(self):
