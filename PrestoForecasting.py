@@ -120,12 +120,9 @@ class PrestoForecasting(pl.LightningModule):
         loss = 0
         relative_loss = 0
         for y_pred, y_true, loss_factor in self.test_step_outputs:
-            print(y_pred, y_true, loss_factor)
-            print(y_pred.shape, y_true.shape, loss_factor.shape)
-            if loss_factor == 1:
-                with torch.no_grad():
-                    loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
-                    relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+            with torch.no_grad():
+                loss +=  torch.sum(torch.abs((y_pred[loss_factor == 1] - y_true[loss_factor == 1].cuda())), axis=0) / y_pred[loss_factor == 1].shape[0]
+                relative_loss += torch.sum(torch.abs((y_pred[loss_factor == 1] - y_true[loss_factor == 1].cuda())/y_true[loss_factor == 1].cuda()), axis=0) / y_pred[loss_factor == 1].shape[0] * 100
         for i, pollutant in enumerate(STATIONS_BANDS):
             self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
