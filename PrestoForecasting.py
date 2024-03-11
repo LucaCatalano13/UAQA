@@ -116,7 +116,7 @@ class PrestoForecasting(pl.LightningModule):
 
         yy_pred = np.ndarray((len(batch), len(STATIONS_BANDS)))
         yy_true = np.ndarray((len(batch), len(STATIONS_BANDS)))
-
+        print(len(batch))
         for batch_ in range(len(batch)):
             a = np.ndarray((len(STATIONS_BANDS)))
             b = np.ndarray(len(STATIONS_BANDS))
@@ -138,8 +138,8 @@ class PrestoForecasting(pl.LightningModule):
         relative_loss = 0
         for y_pred, y_true in self.test_step_outputs:
             with torch.no_grad():
-                loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
-                relative_loss += torch.nansum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+                loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+                relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
         for i, pollutant in enumerate(STATIONS_BANDS):
             self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
