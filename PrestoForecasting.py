@@ -153,6 +153,7 @@ class PrestoForecasting(pl.LightningModule):
         relative_loss = 0
         n = 0
         for i, pollutant in enumerate(STATIONS_BANDS):
+            print(self.test_step_outputs.shape)
             for y_pred, y_true, loss_factor in self.test_step_outputs:
                 print(loss_factor[i])
                 if loss_factor[i] >= 1:
