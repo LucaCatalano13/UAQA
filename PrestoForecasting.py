@@ -113,7 +113,7 @@ class PrestoForecasting(pl.LightningModule):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
-        for b in range(batch.shape[0]):
+        for b in range(len(batch)):
             for i in range(len(STATIONS_BANDS)):
                 if loss_factor[b, i] == 1:
                     print(loss_factor)
