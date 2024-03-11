@@ -156,6 +156,7 @@ class PrestoForecasting(pl.LightningModule):
         for y_pred, y_true in self.test_step_outputs:
             with torch.no_grad():
                 loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / self.non_nan_counts
+                print(loss)
                 relative_loss += torch.nansum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / self.non_nan_counts * 100
         print(loss)
         for i, pollutant in enumerate(STATIONS_BANDS):
