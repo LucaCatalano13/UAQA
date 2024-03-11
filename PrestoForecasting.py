@@ -129,7 +129,7 @@ class PrestoForecasting(pl.LightningModule):
                     b[i] = np.nan
             yy_pred[batch_] = a
             yy_true[batch_] = b
-        print(torch.Tensor(yy_pred).shape)
+        print("**", torch.Tensor(yy_pred).shape)
         self.test_step_outputs.append((torch.Tensor(yy_pred), torch.Tensor(yy_true)))
         return y_pred
     
