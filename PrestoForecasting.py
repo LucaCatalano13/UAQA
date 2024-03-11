@@ -114,12 +114,15 @@ class PrestoForecasting(pl.LightningModule):
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
         for b in range(len(batch)):
+            yy_pred = []
+            yy_true = []
             for i in range(len(STATIONS_BANDS)):
                 if loss_factor[b, i] == 1:
-                    print(loss_factor)
-                    y_pred[:, i] = y_true[:, i]
-        print(y_pred.shape, y_true.shape)
-        self.test_step_outputs.append((y_pred, y_true))
+                    print("Loss factor: ", loss_factor[b, i])
+                    yy_pred.append(y_pred[b, i])
+                    yy_true.append(y_true[b, i])
+        if len(yy_pred) > 0:
+            self.test_step_outputs.append((torch.Tensor(yy_pred), torch.Tensor(yy_true)))
         return y_pred
     
     def on_test_epoch_end(self):
