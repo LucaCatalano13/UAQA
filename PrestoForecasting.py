@@ -120,6 +120,8 @@ class PrestoForecasting(pl.LightningModule):
         loss = 0
         relative_loss = 0
         for y_pred, y_true, loss_factor in self.test_step_outputs:
+            print(y_pred, y_true, loss_factor)
+            print(y_pred.shape, y_true.shape, loss_factor.shape)
             if loss_factor == 1:
                 with torch.no_grad():
                     loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
