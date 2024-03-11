@@ -113,18 +113,22 @@ class PrestoForecasting(pl.LightningModule):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
+
+        yy_pred = []
+        yy_true = []
+
         for b in range(len(batch)):
-            yy_pred = []
-            yy_true = []
+            a = np.ndarray((len(STATIONS_BANDS)))
+            b = np.ndarray(len(STATIONS_BANDS))
             for i in range(len(STATIONS_BANDS)):
                 if loss_factor[b, i] >= 1.0:
-                    a = [0 for _ in range(len(STATIONS_BANDS))]
-                    print(a)
-                    a[i] = y_pred[b, i]
-                    b = [0 for _ in range(len(STATIONS_BANDS))]
-                    b[i] = y_true[b, i]
-                    yy_pred.append(a)
-                    yy_true.append(b)
+                    a[i] = float(y_pred[b, i])
+                    b[i] = float(y_true[b, i])
+                else:
+                    a[i] = np.nan
+                    b[i] = np.nan
+            yy_pred.append(a)
+            yy_true.append(b)
         if len(yy_pred) > 0:
             print(torch.Tensor(yy_pred).shape)
             self.test_step_outputs.append((torch.Tensor(yy_pred), torch.Tensor(yy_true)))
@@ -135,8 +139,8 @@ class PrestoForecasting(pl.LightningModule):
         relative_loss = 0
         for y_pred, y_true in self.test_step_outputs:
             with torch.no_grad():
-                loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
-                relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+                loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+                relative_loss += torch.nansum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
         for i, pollutant in enumerate(STATIONS_BANDS):
             self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
