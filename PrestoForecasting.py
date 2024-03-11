@@ -135,7 +135,6 @@ class PrestoForecasting(pl.LightningModule):
         #     yy_pred[batch_] = a
         #     yy_true[batch_] = b
         # print("**", torch.Tensor(yy_pred).shape)
-        print(y_pred.shape, y_true.shape)
         self.test_step_outputs.append((torch.Tensor(y_pred), torch.Tensor(y_true)))
         self.non_nan_counts = y_pred.size(0) - torch.sum(mask, dim=0)
         return y_pred
@@ -158,6 +157,7 @@ class PrestoForecasting(pl.LightningModule):
             with torch.no_grad():
                 loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / self.non_nan_counts
                 relative_loss += torch.nansum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / self.non_nan_counts * 100
+        print(loss)
         for i, pollutant in enumerate(STATIONS_BANDS):
             self.log(f"TEST: MAE of {pollutant}: ", loss[i]/self.non_nan_counts[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"TEST: % error of {pollutant}", relative_loss[i]/self.non_nan_counts[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
