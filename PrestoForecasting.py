@@ -122,8 +122,8 @@ class PrestoForecasting(pl.LightningModule):
                     a[i] = y_pred[b, i]
                     b = [0 for _ in range(len(STATIONS_BANDS))]
                     b[i] = y_true[b, i]
-                    yy_pred.append(torch.Tensor(a))
-                    yy_true.append(torch.Tensor(b))
+                    yy_pred.append(a)
+                    yy_true.append(b)
         if len(yy_pred) > 0:
             print(torch.Tensor(yy_pred).shape)
             self.test_step_outputs.append((torch.Tensor(yy_pred), torch.Tensor(yy_true)))
