@@ -70,7 +70,7 @@ class PrestoForecasting(pl.LightningModule):
         self.optimizer = self.configure_optimizers()
         self.normalized = normalized
         self.test_step_outputs = []
-        self.non_nan_counts = [0.0 for _ in range(len(STATIONS_BANDS))]
+        self.non_nan_counts = torch.Tensor([0.0 for _ in range(len(STATIONS_BANDS))])
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
@@ -137,6 +137,7 @@ class PrestoForecasting(pl.LightningModule):
         # print("**", torch.Tensor(yy_pred).shape)
         self.test_step_outputs.append((torch.Tensor(y_pred), torch.Tensor(y_true)))
         self.non_nan_counts += y_pred.size(0) - torch.sum(mask, dim=0)
+        print(self.non_nan_counts.shape)
         return y_pred
     
     # def on_test_epoch_end(self):
@@ -151,7 +152,7 @@ class PrestoForecasting(pl.LightningModule):
     #         self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
 
     def on_test_epoch_end(self):
-        self.non_nan_counts = torch.Tensor(self.non_nan_counts)
+        # self.non_nan_counts = torch.Tensor(self.non_nan_counts)
         loss = 0
         relative_loss = 0
         for y_pred, y_true in self.test_step_outputs:
