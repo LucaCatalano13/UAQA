@@ -117,8 +117,7 @@ class PrestoForecasting(pl.LightningModule):
             yy_pred = []
             yy_true = []
             for i in range(len(STATIONS_BANDS)):
-                print(loss_factor[b, i])
-                if loss_factor[b, i] == 1:
+                if loss_factor[b, i] >= 1.0:
                     a = [0 for _ in range(len(STATIONS_BANDS))]
                     a[i] = y_pred[b, i]
                     b = [0 for _ in range(len(STATIONS_BANDS))]
