@@ -155,6 +155,7 @@ class PrestoForecasting(pl.LightningModule):
         # self.non_nan_counts = torch.Tensor(self.non_nan_counts)
         loss = 0
         relative_loss = 0
+        self.non_nan_counts = self.non_nan_counts.cuda()
         for y_pred, y_true in self.test_step_outputs:
             with torch.no_grad():
                 loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / self.non_nan_counts
