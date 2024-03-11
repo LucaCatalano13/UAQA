@@ -151,6 +151,7 @@ class PrestoForecasting(pl.LightningModule):
     #         self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
 
     def on_test_epoch_end(self):
+        self.non_nan_counts = torch.Tensor(self.non_nan_counts)
         loss = 0
         relative_loss = 0
         for y_pred, y_true in self.test_step_outputs:
