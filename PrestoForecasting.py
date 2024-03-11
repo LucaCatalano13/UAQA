@@ -113,16 +113,17 @@ class PrestoForecasting(pl.LightningModule):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
-        self.test_step_outputs.append((y_pred, y_true))
+        self.test_step_outputs.append((y_pred, y_true, loss_factor))
         return y_pred
     
     def on_test_epoch_end(self):
         loss = 0
         relative_loss = 0
-        for y_pred, y_true in self.test_step_outputs:
-            with torch.no_grad():
-                loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
-                relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+        for y_pred, y_true, loss_factor in self.test_step_outputs:
+            if loss_factor == 1:
+                with torch.no_grad():
+                    loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+                    relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
         for i, pollutant in enumerate(STATIONS_BANDS):
             self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
