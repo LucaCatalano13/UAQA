@@ -44,7 +44,6 @@ class Mlp(nn.Module):
         x = self.fc4(x)
         return x
 
-
 class PrestoForecasting(pl.LightningModule):
     def __init__(self, encoder, normalized = False, MLP_hidden_features = 64, MLP_out_features = 7):
         super().__init__()
@@ -71,6 +70,7 @@ class PrestoForecasting(pl.LightningModule):
         self.optimizer = self.configure_optimizers()
         self.normalized = normalized
         self.test_step_outputs = []
+        self.non_nan_counts = torch.Tensor([0.0 for _ in range(len(STATIONS_BANDS))])
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr = self.lr)
@@ -114,19 +114,53 @@ class PrestoForecasting(pl.LightningModule):
         x, hard_mask, latlons, day_of_year, day_of_week, y_true, loss_factor = batch
         # forward
         y_pred = self(x, latlons, hard_mask, day_of_year, day_of_week)
-        self.test_step_outputs.append((y_pred, y_true))
+        # mask = loss_factor.ne(1)
+
+        # Use the mask to put NaN values in y
+        # y_pred[mask] = float('nan')
+        # y_true[mask] = float('nan')
+        self.test_step_outputs.append((torch.Tensor(y_pred), torch.Tensor(y_true), torch.Tensor(loss_factor)))
+        # self.non_nan_counts += (y_pred.size(0) - torch.sum(mask, dim=0)).cpu()
         return y_pred
     
+    # def on_test_epoch_end(self):
+    #     loss = 0
+    #     relative_loss = 0
+    #     for y_pred, y_true in self.test_step_outputs:
+    #         with torch.no_grad():
+    #             loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
+    #             relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+    #     for i, pollutant in enumerate(STATIONS_BANDS):
+    #         self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+    #         self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+
+    # def on_test_epoch_end(self):
+    #     # self.non_nan_counts = torch.Tensor(self.non_nan_counts)
+    #     loss = 0
+    #     relative_loss = 0
+    #     self.non_nan_counts = self.non_nan_counts.cuda()
+    #     for y_pred, y_true in self.test_step_outputs:
+    #         with torch.no_grad():
+    #             loss +=  torch.nansum(torch.abs((y_pred - y_true.cuda())), axis=0) / self.non_nan_counts
+    #             relative_loss += torch.nansum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / self.non_nan_counts * 100
+    #     print(loss, self.non_nan_counts)
+    #     for i, pollutant in enumerate(STATIONS_BANDS):
+    #         self.log(f"TEST: MAE of {pollutant}: ", loss[i]/self.non_nan_counts[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+    #         self.log(f"TEST: % error of {pollutant}", relative_loss[i]/self.non_nan_counts[i], logger=True, prog_bar=True, on_step=False, on_epoch=True)
+
     def on_test_epoch_end(self):
         loss = 0
         relative_loss = 0
-        for y_pred, y_true in self.test_step_outputs:
-            with torch.no_grad():
-                loss +=  torch.sum(torch.abs((y_pred - y_true.cuda())), axis=0) / y_pred.shape[0]
-                relative_loss += torch.sum(torch.abs((y_pred - y_true.cuda())/y_true.cuda()), axis=0) / y_pred.shape[0] * 100
+        n = 0
         for i, pollutant in enumerate(STATIONS_BANDS):
-            self.log(f"TEST: MAE of {pollutant}: ", loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
-            self.log(f"TEST: % error of {pollutant}", relative_loss[i]/len(self.test_step_outputs), logger=True, prog_bar=True, on_step=False, on_epoch=True)
+            for y_pred, y_true, loss_factor in self.test_step_outputs:
+                for l_ix in range(loss_factor.shape[0]):
+                    if loss_factor[l_ix][i] >= 1:
+                        loss += torch.abs((y_pred[l_ix][i] - y_true[l_ix][i].cuda()))
+                        n += 1
+            print(loss, n)
+            self.log(f"TEST: MAE of {pollutant}: ", loss/n, logger=True, prog_bar=True, on_step=False, on_epoch=True)
+
 
     def log_metrics(self , y_pred, y_true, loss_factor, str_step):
         with torch.no_grad():

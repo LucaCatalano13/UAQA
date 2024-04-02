@@ -99,7 +99,7 @@ class ADSP_Dataset (Dataset):
             print("Max: ", band.max())
             show((raster, i+1))
 
-    def __get_all_mean_per_bands(self):
+    def get_all_mean_per_bands(self):
         dataset_bands = self.shape_resized_raster[0]
         sum_values_per_bands = np.zeros(dataset_bands)
         n_values = np.zeros(dataset_bands)
@@ -107,9 +107,11 @@ class ADSP_Dataset (Dataset):
         for day_index in range(len(self.files)):
             raster = self[day_index]
             #for all bands in dataset
-            for band in range(dataset_bands):
+            for band in range(raster.shape[0]):
                 sum_values_per_bands[band] += np.nansum(raster[band])
                 n_values[band] += np.sum(~np.isnan(raster[band]))
+        print("sum_values_per_bands: ", sum_values_per_bands)
+        print("n_values: ", n_values)
         return sum_values_per_bands / n_values
     
     def from_file_path_to_date(self, string):

@@ -80,7 +80,7 @@ class LandCover(ADSP_Dataset):
         show((raster, i+1))
         
     def get_mean_per_bands(self):
-      return self.__get_all_mean_per_bands()
+      return self.get_all_mean_per_bands()
     
     def from_file_path_to_date(self, string):
       return "static dataset"
